@@ -3,16 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <title>Search</title>
+    <script src="../static/js/jquery-3.5.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#form_search').submit(function() {
+                let form = $(this)
+                jQuery.ajax({ //post form資料 抓取json檔案
+                    type:"POST",
+                    url: '/searchName',
+                    data:form.serialize(), //post form
+                    dataType: "json",
+                    success: function(res) { //連到伺服器
+                        console.log(res);
+                        let table = $('#table')
+                        let result_title = $('#result_title')
+                        $('#result_div').show();
+                        if(res['result'] === "no"){ //sql no data
+                            result_title.html("No such file");
+                            table.hide();
+                        }else{
+                            result_title.html("Results here:");
+                            table.show();
+                            table.html(res['result'])
+                        }
+                    },
+                    fail:function () { //沒連到伺服器
+                        $('#result_div').hide();
+                        console.log('error');
+                    }
+                });
+                return false; //讓她不會reload
+             });
+        });
+    </script>
 </head>
 <body>
-    {% if results %}
-        <h1>{{results}}</h1>
-    {% else %}
-        <form method="POST" action='/search'>
+    <div>
+        <h1>Search</h1>
+        <form id="form_search">
             <label for="name">Search name here:</label><br>
             <input type="text" id="name" name="name"><br>
             <input type="submit" value="Submit">
         </form>
-    {% endif %}
+    </div>
+    <div id="result_div" style="display: none">
+        <p id="result_title"></p>
+        <div id="table"></div>
+    </div>
 </body>
 </html>
+
