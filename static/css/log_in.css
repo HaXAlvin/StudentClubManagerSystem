@@ -1,0 +1,20 @@
+#theBiggestDiv {
+  margin: 0px auto;
+  width: 475px;
+  height: 200px;
+  border-color: darkolivegreen;
+  border-style: outset;
+  border-radius: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.col-sm-10 {
+  margin: 0 auto;
+}
+
+.accountBox {
+  margin: 0 auto;
+}

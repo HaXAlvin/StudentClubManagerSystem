@@ -7,7 +7,7 @@ conn = pymysql.connect(
     host='127.0.0.1',
     port=3306,
     user='root',
-    passwd='0000',  # getpass('pass')
+    passwd='qwer25604677',  # getpass('pass')
     db='iosclub',
     charset='utf8mb4',
 )
