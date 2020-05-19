@@ -6,13 +6,15 @@
     <script src="../static/js/jquery-3.5.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#form_search').submit(function() {
-                let form = $(this)
+            let url = null
+            function post(){
+                let data = $('#data').val()
                 jQuery.ajax({ //post form資料 抓取json檔案
                     type:"POST",
-                    url: '/searchName',
-                    data:form.serialize(), //post form
+                    url: url,
+                    data: JSON.stringify({'data':data}), //post form
                     dataType: "json",
+                    contentType: "application/json; charset=utf-8",
                     success: function(res) { //連到伺服器
                         console.log(res);
                         let table = $('#table')
@@ -33,17 +35,27 @@
                     }
                 });
                 return false; //讓她不會reload
-             });
+            }
+            $('#btn_name').click(function () {
+                url = '/searchName';
+                post()
+            })
+            $('#btn_sql').click(function () {
+                url = '/query';
+                post()
+            })
+
         });
     </script>
 </head>
 <body>
     <div>
-        <h1>Search</h1>
+        <h1>Search Name or Run SQL Query</h1>
         <form id="form_search">
-            <label for="name">Search name here:</label><br>
-            <input type="text" id="name" name="name"><br>
-            <input type="submit" value="Submit">
+            <label for="data">Enter here:</label><br>
+            <input type="text" id="data"><br>
+            <input id="btn_sql" type="button" value="Run SQL">
+            <input id="btn_name" type="button" value="Search Name">
         </form>
     </div>
     <div id="result_div" style="display: none">
