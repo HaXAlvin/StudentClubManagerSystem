@@ -1,11 +1,13 @@
-from flask import Flask, render_template, request, jsonify
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token,
-    get_jwt_identity
-)
+import datetime
+from flask import Flask, render_template, request, jsonify, url_for, redirect
+from flask_jwt_extended import (jwt_required, get_jwt_identity, JWTManager, create_access_token, unset_jwt_cookies,
+                                jwt_optional, get_jwt_claims, set_access_cookies)
+import jwt
+import hashlib
 import pymysql
 import pandas
 from bs4 import BeautifulSoup
+import time
 
 
 class User(object):
@@ -23,60 +25,91 @@ class User(object):
 # with open('userList.json' , 'r') as reader:
 #     jf = json.loads(reader.read())
 users = [
-    User(1, 'D0745378', '0000'),
-    User(2, 'D0746235', '1111'),
+    User('D0745378', '薛竣祐', '0000'),
+    User('D0746235', '黃傳霖', '1111'),
 ]
 
 app = Flask(__name__)
-app.config['JWT_SECRET_KEY'] = 'i05c1u6'  # 設定 JWT 密鑰
-jwt = JWTManager(app)
 
+
+s = hashlib.sha256()
+s.update("i05c1u6".encode('utf-8'))
+key = s.hexdigest()
+print('key:', key)
+app.config['JWT_SECRET_KEY'] = key  # 設定 JWT 密鑰
+app.config['JWT_TOKEN_LOCATION'] = 'cookies'  # 金耀讀取
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=10)  # 過期時間
+app.config['JWT_ALGORITHM'] = 'HS256'  # hash
+app.config['JWT_ACCESS_COOKIE_NAME'] = 'access_token_cookie'  # cookie name
+app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
+jwtAPP = JWTManager(app)
+
+
+# try:
+#     jwt.decode('JWT_STRING', 'secret', algorithms=['HS256'])
+# except jwt.ExpiredSignatureError:
+#     # Signature has expired
 conn = pymysql.connect(
     host='127.0.0.1',
     port=3306,
     user='root',
-    passwd='qwer25604677',  # getpass('pass')
+    passwd='0000',  # getpass('pass')
     db='iosclub',
     charset='utf8mb4',
 )
 
 
-# Provide a method to create access tokens. The create_access_token()
-# function is used to actually generate the token, and you can return
-# it to the caller however you choose.
-@app.route('/login', methods=['POST'])
-def login():  # using JWT
+@app.route('/login', methods=['GET'])
+def login():
+    return render_template('login.html')
+
+
+@app.route('/loginAccount', methods=['POST'])
+def loginAccount():  # using JWT
     print(request.get_json())
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
-    username = request.json.get('username', None)
+    account = request.json.get('account', None)
     password = request.json.get('password', None)
-    if not username:
-        return jsonify({"msg": "Missing username parameter"}), 400
+    if not account:
+        return jsonify({"msg": "Missing account parameter"}), 400
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
-
-    if (username, password) not in ((u.username, u.password) for u in users):
-        return jsonify({"msg": "Bad username or password"}), 401
-
-    # Identity can be any data that is json serializable
-    access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token), 200
-
-
-# Protect a view with jwt_required, which requires a valid access token
-# in the request to access.
-@app.route('/protected', methods=['GET'])
-@jwt_required
-def protected():
-    # Access the identity of the current user with get_jwt_identity
-    current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200
+    if (account, password) not in ((u.userID, u.password) for u in users):
+        return jsonify({"msg": "Bad account or password"}), 401
+    token = create_access_token(
+        identity={
+            'account': account
+        },
+        headers={
+            "typ": "JWT",
+            "alg": "HS256"
+        }
+    )
+    resp = jsonify({'login': True})
+    set_access_cookies(resp, token)
+    return resp, 200
 
 
-@app.route('/')  # address
+@app.route('/index', methods=['GET'])
+@app.route('/', methods=['GET'])  # address
+@jwt_optional
 def hello_world():
-    return render_template('index.html')
+    print(123)
+    identity = get_jwt_identity()
+    print(identity)
+    print(get_jwt_claims())
+    if identity is None:
+        return redirect(url_for('login'))
+
+    return render_template('index.html', account=identity['account'])
+
+
+@jwtAPP.expired_token_loader
+def my_expired():
+    resp = jsonify({'login': False})
+    unset_jwt_cookies(resp)
+    #return redirect(url_for('login'))
 
 
 @app.route('/searchName', methods=['POST'])  # API
@@ -122,13 +155,13 @@ def query():
 
 
 @app.route('/search', methods=['GET'])
+@jwt_optional
 def search():
+    identity = get_jwt_identity()
+    print(identity)
+    if identity is None:
+        return render_template('login.html')
     return render_template('search.html')
-
-
-@app.route('/test', methods=['GET'])
-def test():
-    return render_template('test.html')
 
 
 if __name__ == '__main__':
