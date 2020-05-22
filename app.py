@@ -1,13 +1,11 @@
 import datetime
 from flask import Flask, render_template, request, jsonify, url_for, redirect
-from flask_jwt_extended import (jwt_required, get_jwt_identity, JWTManager, create_access_token, unset_jwt_cookies,
-                                jwt_optional, get_jwt_claims, set_access_cookies)
-import jwt
+from flask_jwt_extended import (get_jwt_identity, JWTManager, create_access_token, unset_jwt_cookies,
+                                jwt_optional, set_access_cookies)
 import hashlib
 import pymysql
 import pandas
 from bs4 import BeautifulSoup
-import time
 
 
 class User(object):
@@ -38,7 +36,7 @@ key = s.hexdigest()
 print('key:', key)
 app.config['JWT_SECRET_KEY'] = key  # 設定 JWT 密鑰
 app.config['JWT_TOKEN_LOCATION'] = 'cookies'  # 金耀讀取
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=10)  # 過期時間
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=600)  # 過期時間
 app.config['JWT_ALGORITHM'] = 'HS256'  # hash
 app.config['JWT_ACCESS_COOKIE_NAME'] = 'access_token_cookie'  # cookie name
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
@@ -92,16 +90,13 @@ def loginAccount():  # using JWT
 
 
 @app.route('/index', methods=['GET'])
-@app.route('/', methods=['GET'])  # address
+@app.route('/', methods=['GET'])
 @jwt_optional
-def hello_world():
-    print(123)
+def index():
     identity = get_jwt_identity()
-    print(identity)
-    print(get_jwt_claims())
+    print('index identity', identity)
     if identity is None:
         return redirect(url_for('login'))
-
     return render_template('index.html', account=identity['account'])
 
 
@@ -109,7 +104,7 @@ def hello_world():
 def my_expired():
     resp = jsonify({'login': False})
     unset_jwt_cookies(resp)
-    #return redirect(url_for('login'))
+    return redirect(url_for('login'))
 
 
 @app.route('/searchName', methods=['POST'])  # API
@@ -158,7 +153,7 @@ def query():
 @jwt_optional
 def search():
     identity = get_jwt_identity()
-    print(identity)
+    print('search identity:', identity)
     if identity is None:
         return render_template('login.html')
     return render_template('search.html')
