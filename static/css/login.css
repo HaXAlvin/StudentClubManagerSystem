@@ -16,14 +16,19 @@ h1 {
   margin: 0 auto;
 }
 
-.accountBox {
-  margin: 0 auto;
+#accountBox {
+  text-align: center;
 }
+
+#passwordBox {
+  text-align: center;
+}
+
 #accountinput {
-  width: 75%;
+  width: 65%;
 }
 #passwordinput {
-  width: 75%;
+  width: 65%;
 }
 
 #above-space {
@@ -39,8 +44,8 @@ h1 {
 #button_div {
   width: 80px;
   height: 30px;
-  border-radius: 15px;
   margin: 0 auto;
+  text-align: center;
 }
 #between-login-account {
   width: max-content;
@@ -50,6 +55,8 @@ h1 {
 #button_login {
   border-radius: 10px;
   border-color: dodgerblue;
+  position: center;
+  margin: 0 auto;
 }
 .text-center {
   text-align: center;
