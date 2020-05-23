@@ -1,7 +1,6 @@
 import datetime
 from flask import Flask, render_template, request, jsonify, url_for, redirect
-from flask_jwt_extended import (get_jwt_identity, JWTManager, create_access_token, unset_jwt_cookies,
-                                jwt_optional, set_access_cookies)
+from flask_jwt_extended import get_jwt_identity, JWTManager, create_access_token, jwt_optional, set_access_cookies
 import hashlib
 import pymysql
 import pandas
@@ -29,24 +28,18 @@ users = [
 
 app = Flask(__name__)
 
-
 s = hashlib.sha256()
 s.update("i05c1u6".encode('utf-8'))
 key = s.hexdigest()
 print('key:', key)
-app.config['JWT_SECRET_KEY'] = key  # 設定 JWT 密鑰
-app.config['JWT_TOKEN_LOCATION'] = 'cookies'  # 金耀讀取
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=600)  # 過期時間
-app.config['JWT_ALGORITHM'] = 'HS256'  # hash
+app.config['JWT_SECRET_KEY'] = key  # set jwt key
+app.config['JWT_TOKEN_LOCATION'] = 'cookies'
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=600)  # 逾期時間
+app.config['JWT_ALGORITHM'] = 'HS256'  # hash type
 app.config['JWT_ACCESS_COOKIE_NAME'] = 'access_token_cookie'  # cookie name
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 jwtAPP = JWTManager(app)
 
-
-# try:
-#     jwt.decode('JWT_STRING', 'secret', algorithms=['HS256'])
-# except jwt.ExpiredSignatureError:
-#     # Signature has expired
 conn = pymysql.connect(
     host='127.0.0.1',
     port=3306,
@@ -94,20 +87,22 @@ def loginAccount():  # using JWT
 @jwt_optional
 def index():
     identity = get_jwt_identity()
-    print('index identity', identity)
+    print('index identity:', identity)
+
+    # verify_jwt_in_request_optional()
     if identity is None:
         return redirect(url_for('login'))
     return render_template('index.html', account=identity['account'])
 
 
-@jwtAPP.expired_token_loader
+@jwtAPP.expired_token_loader  # 逾期func
 def my_expired():
-    resp = jsonify({'login': False})
-    unset_jwt_cookies(resp)
-    return redirect(url_for('login'))
+    resp = redirect(url_for('login'))
+    resp.set_cookie('access_token_cookie', "")
+    return resp
 
 
-@app.route('/searchName', methods=['POST'])  # API
+@app.route('/searchName', methods=['POST'])
 def search_name():
     conn.ping(reconnect=True)
     res = {'result': 'no'}
