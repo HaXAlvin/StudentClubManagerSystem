@@ -1,10 +1,13 @@
 import datetime
 from flask import Flask, render_template, request, jsonify, url_for, redirect
-from flask_jwt_extended import get_jwt_identity, JWTManager, create_access_token, jwt_optional, set_access_cookies
+import flask_jwt_extended as jwt
+import pyqrcode
 import hashlib
 import pymysql
 import pandas
 from bs4 import BeautifulSoup
+import random
+import string
 
 
 class User(object):
@@ -25,20 +28,20 @@ users = [
     User('D0745378', '薛竣祐', '0000'),
     User('D0746235', '黃傳霖', '1111'),
 ]
-
 app = Flask(__name__)
 
 s = hashlib.sha256()
-s.update("i05c1u6".encode('utf-8'))
+s.update("i05c1u652005505".encode('utf-8'))
 key = s.hexdigest()
 print('key:', key)
 app.config['JWT_SECRET_KEY'] = key  # set jwt key
 app.config['JWT_TOKEN_LOCATION'] = 'cookies'
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=600)  # 逾期時間
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=300)  # 逾期時間
 app.config['JWT_ALGORITHM'] = 'HS256'  # hash type
 app.config['JWT_ACCESS_COOKIE_NAME'] = 'access_token_cookie'  # cookie name
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(seconds=300)
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
-jwtAPP = JWTManager(app)
+jwtAPP = jwt.JWTManager(app)
 
 conn = pymysql.connect(
     host='127.0.0.1',
@@ -50,25 +53,22 @@ conn = pymysql.connect(
 )
 
 
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template('login.html')
-
-
-@app.route('/loginAccount', methods=['POST'])
-def loginAccount():  # using JWT
+    if request.method == 'GET':
+        return render_template('login.html')
     print(request.get_json())
     if not request.is_json:
-        return jsonify({"msg": "Missing JSON in request"}), 400
+        return jsonify({"login": False, "msg": "Missing JSON in request"}), 400
     account = request.json.get('account', None)
     password = request.json.get('password', None)
     if not account:
-        return jsonify({"msg": "Missing account parameter"}), 400
+        return jsonify({"login": False, "msg": "Missing account parameter"}), 400
     if not password:
-        return jsonify({"msg": "Missing password parameter"}), 400
+        return jsonify({"login": False, "msg": "Missing password parameter"}), 400
     if (account, password) not in ((u.userID, u.password) for u in users):
-        return jsonify({"msg": "Bad account or password"}), 401
-    token = create_access_token(
+        return jsonify({"login": False, "msg": "Bad account or password"}), 401
+    access_token = jwt.create_access_token(
         identity={
             'account': account
         },
@@ -77,29 +77,46 @@ def loginAccount():  # using JWT
             "alg": "HS256"
         }
     )
-    resp = jsonify({'login': True})
-    set_access_cookies(resp, token)
-    return resp, 200
+    refresh_token = jwt.create_refresh_token(
+        identity={
+            'account': account
+        },
+        headers={
+            "typ": "JWT",
+            "alg": "HS256"
+        }
+    )
+    next_page = request.json.get('next', None)
+    url = '/'
+    if next_page:
+        next_page.replace('%2F', '/')
+        url = next_page
+    resp = jsonify({'login': True, 'next': url})
+    # resp = redirect(url_for('index'), 302)
+    jwt.set_access_cookies(resp, access_token)
+    jwt.set_refresh_cookies(resp, refresh_token)
+    return resp
 
 
 @app.route('/index', methods=['GET'])
 @app.route('/', methods=['GET'])
-@jwt_optional
+@jwt.jwt_optional
 def index():
-    identity = get_jwt_identity()
+    identity = jwt.get_jwt_identity()
     print('index identity:', identity)
-
-    # verify_jwt_in_request_optional()
     if identity is None:
-        return redirect(url_for('login'))
+        # print('no')
+        resp = redirect(url_for('login', next=request.endpoint, _method='GET'))
+        # resp.set_cookie(key='pre', value='index')
+        return resp
     return render_template('index.html', account=identity['account'])
 
 
 @jwtAPP.expired_token_loader  # 逾期func
 def my_expired():
     resp = redirect(url_for('login'))
-    resp.set_cookie('access_token_cookie', "")
-    return resp
+    jwt.unset_jwt_cookies(resp)
+    return resp, 302
 
 
 @app.route('/searchName', methods=['POST'])
@@ -145,14 +162,74 @@ def query():
 
 
 @app.route('/search', methods=['GET'])
-@jwt_optional
+@jwt.jwt_optional
 def search():
-    identity = get_jwt_identity()
+    identity = jwt.get_jwt_identity()
     print('search identity:', identity)
     if identity is None:
-        return render_template('login.html')
+        redirect(url_for('login'))
     return render_template('search.html')
+
+
+@app.route('/sign_up', methods=['GET'])
+def sign_up():
+    return render_template('sign_up.html')
+
+
+punch_record = []
+
+
+@app.route('/creat_qrcode', methods=['GET'])
+def creat_qrcode():
+    letters = string.ascii_letters
+    code = ''.join(random.choice(letters) for _ in range(10))
+    record = {'code': code, 'expired': datetime.datetime.now() + datetime.timedelta(minutes=3)}
+    punch_record.append(record)
+    url = '/punch_in/{}'.format(code)
+    qrcode = pyqrcode.create('127.0.0.1{}'.format(url), error='H')
+    image_as_str = qrcode.png_as_base64_str(scale=15)
+    return render_template('qrcode.html', qrcode=image_as_str, url=url)
+
+
+@app.route('/punch_in/<code>')
+@jwt.jwt_optional
+def punch_in(code):
+    identity = jwt.get_jwt_identity()
+    if identity is None:
+        return redirect(url_for('login', next=request.endpoint+'/'+code))
+    for record in punch_record:
+        if code == record['code']:
+            if datetime.datetime.now() <= record['expired']:
+                print(identity['account'], 'punch in success')
+                punch_record.remove(record)
+                return jsonify({'punch_in': True})
+            else:
+                print('datetime expired')
+                return jsonify({'punch_in': False})
+    return jsonify({'punch_in': False})
 
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5277, debug=True)  # debug = true 隨時變動
+
+
+# CSRF refresh
+# @app.route('/refresh', methods=['POST'])
+# @jwt_refresh_token_required
+# def refresh():
+#     # verify_jwt_refresh_token_in_request()
+#     print(1111111111111111111111111111111)
+#     identity = get_jwt_identity()
+#     print(identity)
+#     resp = jsonify({'login': True})
+#     new_token = create_access_token(
+#         identity={
+#             'account': identity['account']
+#         },
+#         headers={
+#             "typ": "JWT",
+#             "alg": "HS256"
+#         }
+#     )
+#     set_access_cookies(resp, new_token)
+#     return jsonify(resp), 200
