@@ -7,7 +7,6 @@ $(document).ready(function() {
         let account = $('#input_account').val();
         let password = $('#input_pwd').val();
         let next = $('#next').val();
-        console.log('123');
         jQuery.ajax({ //post form資料 抓取json檔案
             type:"POST",
             url: '/login',
@@ -18,6 +17,7 @@ $(document).ready(function() {
                 console.log(res['login']);
                 console.log(res['next'])
                 if (res['login'] == true) {
+                    // console.log(res['next']);
                     $(location). attr('href',res['next']);
                     // parent.history.back();
                 }
