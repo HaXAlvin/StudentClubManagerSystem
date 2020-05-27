@@ -1,0 +1,15 @@
+#logo_black {
+  width: 200px;
+}
+.navbar-center {
+  display: inline-block;
+  float: none;
+  vertical-align: top;
+}
+
+.navbar-collapse-center {
+  text-align: center;
+}
+.logo {
+  text-align: center;
+}

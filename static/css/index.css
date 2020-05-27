@@ -8,7 +8,7 @@
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
 .hideUp {
-  top: -48px;
+  top: -60px;
 }
 .auto-hide-header.is-hidden {
   transform: translateY(-100%);
@@ -17,4 +17,20 @@
   padding-top: 100px;
   padding-left: 25px;
   padding-right: 25px;
+}
+#logo_black {
+  width: 200px;
+}
+.navbar-center {
+  display: inline-block;
+  float: none;
+  vertical-align: top;
+}
+
+.navbar-collapse-center {
+  text-align: center;
+}
+
+.logo {
+  text-align: center;
 }
