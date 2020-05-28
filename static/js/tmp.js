@@ -1,9 +1,7 @@
 var bodyClass = $(".auto-hide-header"),
   lastScrollY = 0;
-var navClass = $(".logo_nav");
 
 $(document).ready(function () {
-  navClass.removeClass("hideUp");
   bodyClass.addClass("hideUp");
 });
 
@@ -17,10 +15,8 @@ window.addEventListener("scroll", function () {
   if (st == 0) {
     this.console.log("logoUnHideUp");
     bodyClass.addClass("hideUp");
-    navClass.removeClass("hideUp");
   } else {
     this.console.log("logoHideUp");
-    navClass.addClass("hideUp");
     if (st < lastScrollY) {
       this.console.log(1);
       bodyClass.removeClass("hideUp");

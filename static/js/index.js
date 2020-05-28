@@ -31,3 +31,11 @@ window.addEventListener("scroll", function () {
   }
   lastScrollY = st;
 });
+window.addEventListener("beforeunload", function (event) {
+  event.returnValue = "您即將離開此網頁";
+  //離開網頁之提示
+});
+window.onbeforeunload = function (event) {
+  event.returnValue = "您即將離開此網頁";
+  //離開網頁之提示
+};
