@@ -17,11 +17,6 @@ $(document).ready(function() {
                 console.log(res['login']);
                 console.log(res['next'])
                 if (res['login'] == true) {
-                    // console.log(res['next']);
-                    // if(res['next'] == 'back'){
-                    //     history.back();
-                    //     return;
-                    // }
                     $(location). attr('href',res['next']);
                 }
             }

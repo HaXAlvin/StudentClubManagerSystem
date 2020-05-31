@@ -4,6 +4,7 @@ from os import path
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, url_for, redirect
 import flask_jwt_extended as jwt
+from flask_apscheduler import APScheduler
 import pyqrcode
 from hashlib import sha256
 import pymysql
@@ -12,7 +13,6 @@ from bs4 import BeautifulSoup
 from random import choice
 from string import ascii_letters
 from time import sleep
-from threading import Thread
 from io import BytesIO
 
 
@@ -26,7 +26,7 @@ class User(object):
 
 class Config:
     # app set
-    DEBUG = True
+    DEBUG = False
     HOST = '127.0.0.1'
     PORT = '5277'
     # jwt set
@@ -47,7 +47,16 @@ class Config:
     QRCODE_LEN = 10
     QRCODE_EXPIRED = timedelta(minutes=3)
     # other set
-    CLEAN_RECORD_DELAY = 3600
+    JOBS = [
+        {
+            'id': 'clean_record',
+            'func': '__main__:clean_record',
+            'trigger': {
+                'type': 'interval',
+                'seconds': 3600  # clean timedelta
+            }
+        }
+    ]
 
 
 # f = open("/userList.json", mode="a")
@@ -55,7 +64,7 @@ class Config:
 # with open('userList.json' , 'r') as reader:
 #     jf = json.loads(reader.read())
 app = Flask(__name__)
-app.config.from_object(Config)  # get setting
+app.config.from_object(Config())  # get setting
 jwtAPP = jwt.JWTManager(app)
 punch_record = []
 img_path = path.dirname(path.abspath(__file__)) + '/static/img'
@@ -290,22 +299,61 @@ def punch_list():
         return jsonify({'msg': e})
 
 
+@app.route('/attendance', methods=['GET'])
+def attendance():
+    conn.ping(reconnect=True)
+    member_id = []
+    member_name = []
+    try:
+        with conn.cursor() as cursor:
+            sql = "SELECT member_id,member_name FROM memberlist;"
+            cursor.execute(sql)
+            results = cursor.fetchall()
+            for row in results:
+                member_id.append(row[0])
+                member_name.append(row[1])
+            sql = "SELECT * FROM class_state;"
+            cursor.execute(sql)
+            results = cursor.fetchall()
+    except pymysql.err.OperationalError as e:
+        print(e)
+        return e
+    data = {
+        'id': member_id,
+        'name': member_name
+    }
+    for row in results:
+        row_date = row[2].strftime("%Y-%m-%d")
+        if row_date not in data.keys():
+            data[row_date] = ["-" for _ in range(len(member_id))]
+        update_index = data['id'].index(row[1])
+        if (row[3], row[4]) in [(1, 1), (1, 0)]:
+            data[row_date][update_index] = 'O'
+        elif (row[3], row[4]) == (0, 1):
+            data[row_date][update_index] = 'LEAVE'
+        else:
+            data[row_date][update_index] = '-'
+    dataFrame = DataFrame(data)
+    soup = BeautifulSoup(dataFrame.to_html(), 'html.parser')  # turn into html table
+    # soup.find('table')['class'] = 'table'  # edit html
+    return soup.prettify()
+
+
 def clean_record():  # clean qrcode list every specific time
-    while True:
-        sleep(app.config.get('CLEAN_RECORD_DELAY'))
-        print("**Start Clean**")
-        now_time = datetime.now()
-        for records in punch_record:
-            if records['expired'] > now_time:
-                print("**Clean 1 record**")
-                punch_record.remove(records)
-        print("**Ended Clean**")
+    now_time = datetime.now()
+    print(f"**Start Clean at {now_time}**")
+    for records in punch_record:
+        if records['expired'] > now_time:
+            print("**Clean 1 record**")
+            punch_record.remove(records)
+    now_time = datetime.now()
+    print(f"**Ended Clean at {now_time}**")
 
-
-clean_record_thread = Thread(target=clean_record)
-clean_record_thread.start()
 
 if __name__ == '__main__':
+    scheduler = APScheduler()  # 例項化APScheduler
+    scheduler.init_app(app)  # 把任務列表放進flask
+    scheduler.start()  # 啟動任務列表
     app.run(port=app.config.get('PORT'), host=app.config.get('HOST'))
 
 # CSRF refresh
