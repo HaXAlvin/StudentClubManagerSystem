@@ -1,0 +1,8 @@
+PyMySQL==0.9.3
+pypng==0.0.20
+PyQRCode==1.2.1
+pandas==1.0.3
+Flask==1.1.1
+Flask-JWT-Extended==3.24.1
+beautifulsoup4==4.9.0
+Pillow==7.1.2

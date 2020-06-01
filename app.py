@@ -1,18 +1,18 @@
-import base64
+from base64 import b64encode
 from datetime import timedelta, datetime
-import os
+from os import path
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, url_for, redirect
 import flask_jwt_extended as jwt
+from flask_apscheduler import APScheduler
 import pyqrcode
-import hashlib
+from hashlib import sha256
 import pymysql
-import pandas
+from pandas import DataFrame
 from bs4 import BeautifulSoup
 from random import choice
 from string import ascii_letters
 from time import sleep
-import threading
 from io import BytesIO
 
 
@@ -24,18 +24,18 @@ class User(object):
         self.manager = manager
 
 
-class Config(object):
+class Config:
     # app set
     DEBUG = False
     HOST = '127.0.0.1'
     PORT = '5277'
     # jwt set
-    JWT_SECRET_KEY = hashlib.sha256("i05c1u652005505".encode('utf-8')).hexdigest()
+    JWT_SECRET_KEY = sha256("i05c1u652005505".encode('utf-8')).hexdigest()
     JWT_TOKEN_LOCATION = 'cookies'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=300)  # 逾期時間
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=10)  # 逾期時間
     JWT_ALGORITHM = 'HS256'  # hash type
     JWT_ACCESS_COOKIE_NAME = 'access_token_cookie'  # cookie name
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(seconds=300)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(seconds=10)
     JWT_ACCESS_COOKIE_PATH = '/'
     # db set
     DB_PORT = 3306
@@ -47,7 +47,16 @@ class Config(object):
     QRCODE_LEN = 10
     QRCODE_EXPIRED = timedelta(minutes=3)
     # other set
-    CLEAN_RECORD_DELAY = 3600
+    JOBS = [
+        {
+            'id': 'clean_record',
+            'func': '__main__:clean_record',
+            'trigger': {
+                'type': 'interval',
+                'seconds': 3600  # clean timedelta
+            }
+        }
+    ]
 
 
 # f = open("/userList.json", mode="a")
@@ -55,12 +64,11 @@ class Config(object):
 # with open('userList.json' , 'r') as reader:
 #     jf = json.loads(reader.read())
 app = Flask(__name__)
-app.config.from_object(Config)  # get setting
+app.config.from_object(Config())  # get setting
 jwtAPP = jwt.JWTManager(app)
 punch_record = []
-img_path = os.path.dirname(os.path.abspath(__file__))+r'\static\img'
-logos = [Image.open(img_path + fr'\icon0{i}.png') for i in range(1, 5)]
-
+img_path = path.dirname(path.abspath(__file__)) + '/static/img'
+logos = [Image.open(img_path + f'/icon0{i}.png') for i in range(1, 5)]
 users = {
     1: User('D0745378', '薛竣祐', '0000', True),
     2: User('D0746235', '黃傳霖', '1111', True),
@@ -83,13 +91,9 @@ while True:
         sleep(1)
 
 
-def jwt_creat_token(types, account):
+def jwt_create_token(types, account):
     method = {'access': jwt.create_access_token, 'refresh': jwt.create_refresh_token}
-    token = method[types](
-        identity={'account': account},
-        headers={"typ": "JWT", "alg": "HS256"}
-    )
-    return token
+    return method[types](identity={'account': account}, headers={"typ": "JWT", "alg": "HS256"})
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -107,12 +111,11 @@ def login():
         return jsonify({"login": False, "msg": "Missing password parameter"}), 400
     if (account, password) not in ((u.userNID, u.password) for u in users.values()):
         return jsonify({"login": False, "msg": "Bad account or password"}), 401
-    access_token = jwt_creat_token('access', account)
-    refresh_token = jwt_creat_token('refresh', account)
-    next_page = request.json.get('next', None)
+    access_token = jwt_create_token('access', account)
+    refresh_token = jwt_create_token('refresh', account)
+    next_page = request.json.get('next', None).replace('%2F', '/')
     if next_page == "":
         next_page = '/'
-    next_page.replace('%2F', '/')
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
     # resp = redirect(url, code=302)
@@ -126,16 +129,17 @@ def login():
 @jwt.jwt_optional
 def index():
     identity = jwt.get_jwt_identity()
+    print('index identity:', identity)
     if identity is None:
-        print('index identity:', identity)
-        resp = redirect(url_for('login', next=request.endpoint, _method='GET'))
+        resp = redirect(url_for('login', next='/'))
         return resp
     return render_template('index.html', account=identity['account'])
 
 
 @jwtAPP.expired_token_loader  # 逾期func
 def my_expired():
-    resp = redirect(url_for('login'))
+    # print(request.path)
+    resp = redirect(url_for('login', next=request.path))
     jwt.unset_jwt_cookies(resp)
     return resp, 302
 
@@ -149,10 +153,11 @@ def search_name():
         sql = "SELECT * FROM memberList WHERE member_name = %s;"
         cursor.execute(sql, name)
         results = cursor.fetchall()
+        print(results)
         if not results:
             res['result'] = 'No data found'
         else:
-            df = pandas.DataFrame(list(results), columns=[i[0] for i in cursor.description])  # make a frame
+            df = DataFrame(list(results), columns=[i[0] for i in cursor.description])  # make a frame
             soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
             soup.find('table')['class'] = 'table'  # edit html
             res['result'] = soup.prettify()  # turn soup object to str
@@ -172,12 +177,11 @@ def query():
             if not results:
                 res['result'] = 'Success'
             else:
-                df = pandas.DataFrame(list(results), columns=[i[0] for i in cursor.description])  # make a frame
+                df = DataFrame(list(results), columns=[i[0] for i in cursor.description])  # make a frame
                 soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
                 soup.find('table')['class'] = 'table'  # edit html
                 res['result'] = soup.prettify()  # turn soup object to str
     except Exception as error_message:
-        conn.ping(reconnect=True)  # true = reconnect
         res['result'] = str(error_message)
     return jsonify(res)  # 回傳json格式
 
@@ -188,7 +192,7 @@ def search():
     identity = jwt.get_jwt_identity()
     print('search identity:', identity)
     if identity is None:
-        redirect(url_for('login'))
+        redirect(url_for('login', next='/search'))
     return render_template('search.html')
 
 
@@ -197,12 +201,12 @@ def sign_up():
     return render_template('sign_up.html')
 
 
-@app.route('/creat_qrcode', methods=['GET'])
+@app.route('/create_qrcode', methods=['GET'])
 @jwt.jwt_optional
-def creat_qrcode():
+def create_qrcode():
     identity = jwt.get_jwt_identity()
     if identity is None:
-        return redirect(url_for('login', next=request.endpoint))
+        return redirect(url_for('login', next='create_qrcode'))
     accept = False
     for user in users.values():
         print(user.userNID, identity['account'], user.manager)
@@ -211,20 +215,19 @@ def creat_qrcode():
             break
     if accept is False:
         return redirect(url_for('index'))
-    letters = ascii_letters
-    code = ''.join(choice(letters) for _ in range(app.config.get('QRCODE_LEN')))
+    code = ''.join(choice(ascii_letters) for _ in range(app.config.get('QRCODE_LEN')))
     record = {'code': code, 'expired': datetime.now() + app.config.get('QRCODE_EXPIRED')}
     punch_record.append(record)
     url = f'/punch_in/{code}'
     qrcode = pyqrcode.create(f'{app.config.get("HOST")}:{app.config.get("PORT")}{url}', error='H')
-    qrcode.png(img_path + r'\qrcode.png', scale=14)
-    img = Image.open(img_path+r'\qrcode.png')
+    qrcode.png(img_path + '/qrcode.png', scale=14)  # 33*14
+    img = Image.open(img_path + '/qrcode.png')
     img = img.convert("RGBA")
     img_size = img.width
-    icon_size = (img_size**2*0.08)**0.5
-    logo = choice(logos)
-    shapes = [int(img_size/2-icon_size/2) if i < 2 else int(img_size/2+icon_size/2) for i in range(4)]
+    icon_size = (img_size ** 2 * 0.08) ** 0.5
+    shapes = [int(img_size / 2 - icon_size / 2) if i < 2 else int(img_size / 2 + icon_size / 2) for i in range(4)]
     img.crop(shapes)
+    logo = choice(logos)
     logo = logo.resize((shapes[2] - shapes[0], shapes[3] - shapes[1]))
     logo.convert('RGBA')
     # mask = Image.new("L", logo.size, 0)
@@ -237,7 +240,7 @@ def creat_qrcode():
     img.paste(logo, shapes, logo)
     buffered = BytesIO()
     img.save(buffered, format="PNG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
+    img_str = b64encode(buffered.getvalue()).decode()
     return render_template('qrcode.html', qrcode=img_str, url=url)
 
 
@@ -246,14 +249,12 @@ def creat_qrcode():
 def punch_in(code):
     identity = jwt.get_jwt_identity()
     if identity is None:
-        return redirect(url_for('login', next=request.endpoint+'/'+code))
+        return redirect(url_for('login', next='/punch_in/' + code))
     for record in punch_record:
         if code == record['code']:
             if datetime.now() <= record['expired']:
-                # print(identity['account'], 'punch in success')
                 punch_record.remove(record)
-                punch_in_sql(identity['account'])
-                return jsonify({'punch_in': True})
+                return jsonify({'punch_in': punch_in_sql(identity['account'])})
             else:
                 print('datetime expired')
                 return jsonify({'punch_in': False})
@@ -268,33 +269,92 @@ def punch_in_sql(account):
             sql = "insert into class_state(member_id, date, attendance, register) " \
                   "values((select member_id from memberlist where member_nid = %s), %s, 1, 1);"
             cursor.execute(sql, (account, now))
-            conn.commit()
             results = cursor.fetchall()
             if not results:
+                conn.commit()
                 print(account, 'punch in at ', now, 'success')
+                return True
+            else:
+                return False
     except pymysql.err.OperationalError as e:
         print(e)
+        return False
+
+
+@app.route('/punch_list', methods=['GET'])
+@jwt.jwt_optional
+def punch_list():
+    conn.ping(reconnect=True)
+    identity = jwt.get_jwt_identity()
+    if identity is None:
+        return redirect(url_for('login', next='/punch_list'))
+    try:
+        with conn.cursor() as cursor:
+            already = "select date from class_state where member_id = " \
+                      "(select member_id from memberlist where member_nid = %s);"
+            cursor.execute(already, identity['account'])
+            return jsonify({'msg': 'success', 'res': cursor.fetchall()})
+    except pymysql.err.OperationalError as e:
+        print(e)
+        return jsonify({'msg': e})
+
+
+@app.route('/attendance', methods=['GET'])
+def attendance():
+    conn.ping(reconnect=True)
+    member_id = []
+    member_name = []
+    try:
+        with conn.cursor() as cursor:
+            sql = "SELECT member_id,member_name FROM memberlist;"
+            cursor.execute(sql)
+            results = cursor.fetchall()
+            for row in results:
+                member_id.append(row[0])
+                member_name.append(row[1])
+            sql = "SELECT * FROM class_state;"
+            cursor.execute(sql)
+            results = cursor.fetchall()
+    except pymysql.err.OperationalError as e:
+        print(e)
+        return e
+    data = {
+        'id': member_id,
+        'name': member_name
+    }
+    for row in results:
+        row_date = row[2].strftime("%Y-%m-%d")
+        if row_date not in data.keys():
+            data[row_date] = ["-" for _ in range(len(member_id))]
+        update_index = data['id'].index(row[1])
+        if (row[3], row[4]) in [(1, 1), (1, 0)]:
+            data[row_date][update_index] = 'O'
+        elif (row[3], row[4]) == (0, 1):
+            data[row_date][update_index] = 'LEAVE'
+        else:
+            data[row_date][update_index] = '-'
+    dataFrame = DataFrame(data)
+    soup = BeautifulSoup(dataFrame.to_html(), 'html.parser')  # turn into html table
+    # soup.find('table')['class'] = 'table'  # edit html
+    return soup.prettify()
 
 
 def clean_record():  # clean qrcode list every specific time
-    while True:
-        print("**Start Clean**")
-        now_time = datetime.now()
-        for records in punch_record:
-            if records['expired'] > now_time:
-                print("**Clean 1 record**")
-                punch_record.remove(records)
-        print("**Ended Clean**")
-        sleep(app.config.get('CLEAN_RECORD_DELAY'))
-
-
-clean_record_thread = threading.Thread(target=clean_record)
-clean_record_thread.start()
+    now_time = datetime.now()
+    print(f"**Start Clean at {now_time}**")
+    for records in punch_record:
+        if records['expired'] > now_time:
+            print("**Clean 1 record**")
+            punch_record.remove(records)
+    now_time = datetime.now()
+    print(f"**Ended Clean at {now_time}**")
 
 
 if __name__ == '__main__':
+    scheduler = APScheduler()  # 例項化APScheduler
+    scheduler.init_app(app)  # 把任務列表放進flask
+    scheduler.start()  # 啟動任務列表
     app.run(port=app.config.get('PORT'), host=app.config.get('HOST'))
-
 
 # CSRF refresh
 # @app.route('/refresh', methods=['POST'])

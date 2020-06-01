@@ -17,9 +17,7 @@ $(document).ready(function() {
                 console.log(res['login']);
                 console.log(res['next'])
                 if (res['login'] == true) {
-                    // console.log(res['next']);
                     $(location). attr('href',res['next']);
-                    // parent.history.back();
                 }
             }
         });
