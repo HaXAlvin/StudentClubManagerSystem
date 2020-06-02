@@ -37,13 +37,24 @@
 .top-nav {
   padding: 10px, 15px;
 }
-.main-function {
-  margin: 0px auto;
+
+@media (min-width: 992px) {
+  .month {
+    font-size: 3.5rem;
+  }
+}
+.iconAndiOSClub {
+  width: 150px;
 }
 
-.gradient {
-  border: 0;
-  height: 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+@mixin clearfix() {
+  &::after {
+    display: block;
+    content: "";
+    clear: both;
+  }
+}
+
+.element {
+  @include clearfix;
 }
