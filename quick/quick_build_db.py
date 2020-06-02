@@ -1,6 +1,7 @@
 from time import sleep
 import pandas
 import pymysql
+from hashlib import sha512
 
 
 def executeScriptsFromFile(filename):
@@ -36,13 +37,18 @@ cursor = conn.cursor()
 dropTable("class_state")
 dropTable("rtc_state")
 dropTable("memberlist")
+dropTable("announcement")
 
 executeScriptsFromFile('create_table.sql')
+
 df = pandas.read_csv("member_list.csv").T
 for i in range(df.shape[1]):
-    val = (df[i][0], df[i][1], df[i][2], df[i][3], df[i][4], df[i][5], df[i][6], df[i][7], df[i][8])
+    seed = df[i][2] if df[i][9] == 'None' else df[i][9]
+    pwd = sha512(seed.encode('utf-8')).hexdigest().upper()
+    manager = df[i][10]
+    val = (df[i][0], df[i][1], df[i][2], df[i][3], df[i][4], df[i][5], df[i][6], df[i][7], df[i][8], pwd, manager)
     print(val)
-    sql = "insert into memberlist VALUE (%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+    sql = "insert into memberlist VALUE (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
     cursor.execute(sql, val)
 conn.commit()
 
@@ -61,4 +67,12 @@ for i in range(1, len(df.columns)):
             cursor.execute(sql, val)
         except Exception as msg:
             print("Command skipped: ", msg)
+conn.commit()
+
+df = pandas.read_csv("announcement.csv").T
+for i in range(df.shape[1]):
+    val = (df[i][0], df[i][1], df[i][2], df[i][3], df[i][4], df[i][5])
+    print(val)
+    sql = "insert into announcement VALUE (%s,%s,%s,%s,%s,%s);"
+    cursor.execute(sql, val)
 conn.commit()
