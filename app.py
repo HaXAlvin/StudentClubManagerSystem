@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify, url_for, redirect
 import flask_jwt_extended as jwt
 from flask_apscheduler import APScheduler
 import pyqrcode
-from hashlib import sha256
+from hashlib import sha256, sha512
 import pymysql
 from pandas import DataFrame
 from bs4 import BeautifulSoup
@@ -14,14 +14,6 @@ from random import choice
 from string import ascii_letters
 from time import sleep
 from io import BytesIO
-
-
-class User(object):
-    def __init__(self, userNID, username, password, manager):
-        self.userNID = userNID
-        self.username = username
-        self.password = password
-        self.manager = manager
 
 
 class Config:
@@ -32,10 +24,10 @@ class Config:
     # jwt set
     JWT_SECRET_KEY = sha256("i05c1u652005505".encode('utf-8')).hexdigest()
     JWT_TOKEN_LOCATION = 'cookies'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=10)  # 逾期時間
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=300)  # 逾期時間
     JWT_ALGORITHM = 'HS256'  # hash type
     JWT_ACCESS_COOKIE_NAME = 'access_token_cookie'  # cookie name
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(seconds=10)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(seconds=300)
     JWT_ACCESS_COOKIE_PATH = '/'
     # db set
     DB_PORT = 3306
@@ -51,6 +43,7 @@ class Config:
         {
             'id': 'clean_record',
             'func': '__main__:clean_record',
+            'misfire_grace_time': 60,
             'trigger': {
                 'type': 'interval',
                 'seconds': 3600  # clean timedelta
@@ -59,21 +52,12 @@ class Config:
     ]
 
 
-# f = open("/userList.json", mode="a")
-# f = open("/userList.json", mode="r")
-# with open('userList.json' , 'r') as reader:
-#     jf = json.loads(reader.read())
 app = Flask(__name__)
 app.config.from_object(Config())  # get setting
 jwtAPP = jwt.JWTManager(app)
 punch_record = []
 img_path = path.dirname(path.abspath(__file__)) + '/static/img'
-logos = [Image.open(img_path + f'/icon0{i}.png') for i in range(1, 5)]
-users = {
-    1: User('D0745378', '薛竣祐', '0000', True),
-    2: User('D0746235', '黃傳霖', '1111', True),
-    3: User('D0000000', '劉祐炘', '6666', False)
-}
+logos = [Image.open(img_path + f'/icon/icon0{i}.png') for i in range(1, 5)]
 # print('key:', app.config['JWT_SECRET_KEY'])
 while True:
     try:
@@ -86,15 +70,29 @@ while True:
             charset=app.config.get('DB_CHARSET'),
         )
         break
-    except pymysql.err.OperationalError as msg:
-        print(f'**{msg}**')
+    except pymysql.err as m:
+        print(f'**{m}**')
         sleep(1)
 
 
 def jwt_create_token(types, account):
-    method = {'access': jwt.create_access_token,
-              'refresh': jwt.create_refresh_token}
+    method = {'access': jwt.create_access_token, 'refresh': jwt.create_refresh_token}
     return method[types](identity={'account': account}, headers={"typ": "JWT", "alg": "HS256"})
+
+
+def run_sql_select(sql, val):  # only select
+    try:
+        conn.ping(reconnect=True)
+        with conn.cursor() as cursor:
+            cursor.execute(sql, val)
+            res = cursor.fetchall()
+            if res == ():
+                return None
+            description = [i[0] for i in cursor.description]
+            return {'res': res, 'des': description}
+    except pymysql.err as msg:
+        print(f'**{msg}**')
+        return None
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -110,13 +108,14 @@ def login():
         return jsonify({"login": False, "msg": "Missing account parameter"}), 400
     if not password:
         return jsonify({"login": False, "msg": "Missing password parameter"}), 400
-    if (account, password) not in ((u.userNID, u.password) for u in users.values()):
+    sql = "SELECT member_nid,password FROM memberList WHERE member_nid = %s;"
+    results = run_sql_select(sql, account)
+    if results is None or sha512(password.encode('utf-8')).hexdigest().upper() != results['res'][0][1]:
         return jsonify({"login": False, "msg": "Bad account or password"}), 401
     access_token = jwt_create_token('access', account)
     refresh_token = jwt_create_token('refresh', account)
     next_page = request.json.get('next', None).replace('%2F', '/')
-    if next_page == "":
-        next_page = '/'
+    next_page = '/' if next_page == "" else next_page
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
     # resp = redirect(url, code=302)
@@ -139,7 +138,6 @@ def index():
 
 @jwtAPP.expired_token_loader  # 逾期func
 def my_expired():
-    # print(request.path)
     resp = redirect(url_for('login', next=request.path))
     jwt.unset_jwt_cookies(resp)
     return resp, 302
@@ -149,21 +147,17 @@ def my_expired():
 def search_name():
     conn.ping(reconnect=True)
     res = {'result': 'no'}
-    with conn.cursor() as cursor:
-        name = request.json.get('data', None)
-        sql = "SELECT * FROM memberList WHERE member_name = %s;"
-        cursor.execute(sql, name)
-        results = cursor.fetchall()
-        print(results)
-        if not results:
-            res['result'] = 'No data found'
-        else:
-            df = DataFrame(list(results), columns=[
-                           i[0] for i in cursor.description])  # make a frame
-            # turn into html table
-            soup = BeautifulSoup(df.to_html(), 'html.parser')
-            soup.find('table')['class'] = 'table'  # edit html
-            res['result'] = soup.prettify()  # turn soup object to str
+    sql = "SELECT * FROM memberList WHERE member_name LIKE %s;"
+    val = '%' + request.json.get('data', None) + '%'
+    results = run_sql_select(sql, val)
+    if not results:
+        res['result'] = 'No data found'
+    else:
+        df = DataFrame(list(results['res']), columns=results['des'])  # make a frame
+        # df = DataFrame(results[0])
+        soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
+        soup.find('table')['class'] = 'table'  # edit html
+        res['result'] = soup.prettify()  # turn soup object to str
     return jsonify(res)  # 回傳json格式
 
 
@@ -180,10 +174,8 @@ def query():
             if not results:
                 res['result'] = 'Success'
             else:
-                df = DataFrame(list(results), columns=[
-                               i[0] for i in cursor.description])  # make a frame
-                # turn into html table
-                soup = BeautifulSoup(df.to_html(), 'html.parser')
+                df = DataFrame(list(results), columns=[i[0] for i in cursor.description])  # make a frame
+                soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
                 soup.find('table')['class'] = 'table'  # edit html
                 res['result'] = soup.prettify()  # turn soup object to str
     except Exception as error_message:
@@ -212,44 +204,31 @@ def create_qrcode():
     identity = jwt.get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='create_qrcode'))
-    accept = False
-    for user in users.values():
-        print(user.userNID, identity['account'], user.manager)
-        if user.userNID == identity['account'] and user.manager is True:
-            accept = True
-            break
+    sql = 'SELECT member_nid, manager FROM memberlist where member_nid = %s;'
+    results = run_sql_select(sql, identity['account'])
+    if results is None:
+        return 'error'
+    accept = False if results['res'][0][1] == 0 else True
     if accept is False:
         return redirect(url_for('index'))
-    code = ''.join(choice(ascii_letters)
-                   for _ in range(app.config.get('QRCODE_LEN')))
-    record = {'code': code, 'expired': datetime.now() +
-              app.config.get('QRCODE_EXPIRED')}
+    code = ''.join(choice(ascii_letters) for _ in range(app.config.get('QRCODE_LEN')))
+    record = {'code': code, 'expired': datetime.now() + app.config.get('QRCODE_EXPIRED')}
     punch_record.append(record)
     url = f'/punch_in/{code}'
-    qrcode = pyqrcode.create(
-        f'{app.config.get("HOST")}:{app.config.get("PORT")}{url}', error='H')
+    qrcode = pyqrcode.create(f'{app.config.get("HOST")}:{app.config.get("PORT")}{url}', error='H')
     qrcode.png(img_path + '/qrcode.png', scale=14)  # 33*14
     img = Image.open(img_path + '/qrcode.png')
     img = img.convert("RGBA")
-    img_size = img.width
-    icon_size = (img_size ** 2 * 0.08) ** 0.5
-    shapes = [int(img_size / 2 - icon_size / 2) if i <
-              2 else int(img_size / 2 + icon_size / 2) for i in range(4)]
+    icon_size = ((img.width ** 2) * 0.08) ** 0.5
+    shapes = [int(img.width / 2 - icon_size / 2) if i < 2 else int(img.width / 2 + icon_size / 2) for i in range(4)]
     img.crop(shapes)
-    logo = choice(logos)
-    logo = logo.resize((shapes[2] - shapes[0], shapes[3] - shapes[1]))
+    logo = choice(logos).resize((shapes[2] - shapes[0], shapes[3] - shapes[1]))
     logo.convert('RGBA')
-    # mask = Image.new("L", logo.size, 0)
-    # mask_im_blur = mask.filter(ImageFilter.GaussianBlur(10))
-    # draw = ImageDraw.Draw(mask)
-    # print(mask.size)
-    # draw.ellipse((0, 0, mask.width, mask.width), fill=255)
-    # mask.show()
-    # img.paste(mask_im_blur, shapes)
     img.paste(logo, shapes, logo)
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     img_str = b64encode(buffered.getvalue()).decode()
+
     return render_template('qrcode.html', qrcode=img_str, url=url)
 
 
@@ -275,8 +254,8 @@ def punch_in_sql(account):
     try:
         with conn.cursor() as cursor:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            sql = "insert into class_state(member_id, date, attendance, register) " \
-                  "values((select member_id from memberlist where member_nid = %s), %s, 1, 1);"
+            sql = "INSERT INTO class_state(member_id, date, attendance, register) " \
+                  "VALUES((SELECT member_id FROM memberlist WHERE member_nid = %s), %s, 1, 1);"
             cursor.execute(sql, (account, now))
             results = cursor.fetchall()
             if not results:
@@ -290,25 +269,52 @@ def punch_in_sql(account):
         return False
 
 
-@app.route('/punch_list', methods=['GET'])
+@app.route('/punch_list', methods=['GET'])  # 個人出席
 @jwt.jwt_optional
 def punch_list():
     conn.ping(reconnect=True)
     identity = jwt.get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='/punch_list'))
-    try:
-        with conn.cursor() as cursor:
-            already = "select date from class_state where member_id = " \
-                      "(select member_id from memberlist where member_nid = %s);"
-            cursor.execute(already, identity['account'])
-            return jsonify({'msg': 'success', 'res': cursor.fetchall()})
-    except pymysql.err.OperationalError as e:
-        print(e)
-        return jsonify({'msg': e})
+    sql = "SELECT date FROM class_state WHERE member_id = (SELECT member_id FROM memberlist WHERE member_nid = %s);"
+    res = run_sql_select(sql, identity['account'])
+    if res is None:
+        return jsonify({'msg': 'fail'})
+    else:
+        df = DataFrame(res['res'], columns=res['des'])  # make a frame
+        soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
+        soup.find('table')['class'] = 'table'  # edit html
+        soup = soup.prettify()  # turn soup object to str
+        return soup
 
 
-@app.route('/attendance', methods=['GET'])
+@app.route('/announcement', methods=['GET'])  # 公告
+def announcement():
+    sql = 'SELECT * FROM announcement;'
+    res = run_sql_select(sql, ())
+    df = DataFrame(res['res'], columns=res['des'])
+    soup = BeautifulSoup(df.to_html(), 'html.parser')
+    # print(soup)
+    td_list = soup.find('tbody').find_all('td')
+    for i in range(2, len(td_list), 6):
+        img = Image.open(img_path+f'/announcement/{td_list[i].contents[0]}.png')
+        img = img.resize((100, 100), Image.BILINEAR)
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        img_str = b64encode(buffered.getvalue()).decode()
+        # td_list[i].contents[0] = img_str
+        new_tag = soup.new_tag("img")
+        new_tag['src'] = f"data:image/png;base64,{img_str}"
+        # tag = f'<img src="data:image/png;base64,{img_str}">'
+        td_list[i].string.replace_with(new_tag)
+        print(str(td_list[i].contents[0]), type(td_list[i].contents[0]))
+    # print(soup.find('tbody').find_all('td'))
+    soup = soup.prettify()
+    # print(soup)
+    return soup
+
+
+@app.route('/attendance', methods=['GET'])  # 出席
 def attendance():
     conn.ping(reconnect=True)
     member_id = []
@@ -343,8 +349,7 @@ def attendance():
         else:
             data[row_date][update_index] = '-'
     dataFrame = DataFrame(data)
-    # turn into html table
-    soup = BeautifulSoup(dataFrame.to_html(), 'html.parser')
+    soup = BeautifulSoup(dataFrame.to_html(), 'html.parser')  # turn into html table
     # soup.find('table')['class'] = 'table'  # edit html
     return soup.prettify()
 
@@ -354,18 +359,19 @@ def clean_record():  # clean qrcode list every specific time
     print(f"**Start Clean at {now_time}**")
     for records in punch_record:
         if records['expired'] > now_time:
-            print("**Clean 1 record**")
+            print(f"**Clean {records['code']} record**")
             punch_record.remove(records)
     now_time = datetime.now()
     print(f"**Ended Clean at {now_time}**")
 
 
 if __name__ == '__main__':
-    scheduler = APScheduler()  # 例項化APScheduler
-    scheduler.init_app(app)  # 把任務列表放進flask
-    scheduler.start()  # 啟動任務列表
+    scheduler = APScheduler()
+    scheduler.init_app(app)
+    scheduler.start()
     app.run(port=app.config.get('PORT'), host=app.config.get('HOST'))
 
+# 公告 圖 時間 標題 內文 瀏覽次數 連結 留言 設備 請假
 # CSRF refresh
 # @app.route('/refresh', methods=['POST'])
 # @jwt_refresh_token_required
