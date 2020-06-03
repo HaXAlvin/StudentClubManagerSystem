@@ -43,3 +43,12 @@ create table `announcement`(
     `view_count` int unsigned not null default 0,
     primary key (`announcement_id`)
 );
+
+create table `comment`(
+    `comment_id` int not null unique auto_increment,
+    `announcement_id` int unsigned not null,
+    `comment_date` timestamp not null,
+    `comment_content` mediumtext not null,
+    primary key(`comment_id`),
+    foreign key(`announcement_id`) references announcement(`announcement_id`)
+);

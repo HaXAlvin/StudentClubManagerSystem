@@ -38,6 +38,7 @@ dropTable("class_state")
 dropTable("rtc_state")
 dropTable("memberlist")
 dropTable("announcement")
+dropTable("comment")
 
 executeScriptsFromFile('create_table.sql')
 
@@ -76,3 +77,5 @@ for i in range(df.shape[1]):
     sql = "insert into announcement VALUE (%s,%s,%s,%s,%s,%s);"
     cursor.execute(sql, val)
 conn.commit()
+
+

@@ -126,14 +126,15 @@ def login():
 
 @app.route('/index', methods=['GET'])
 @app.route('/', methods=['GET'])
-@jwt.jwt_optional
+# @jwt.jwt_optional
 def index():
     identity = jwt.get_jwt_identity()
     print('index identity:', identity)
-    if identity is None:
-        resp = redirect(url_for('login', next='/'))
-        return resp
-    return render_template('index.html', account=identity['account'])
+    # if identity is None:
+    #     resp = redirect(url_for('login', next='/'))
+    #     return resp
+    # return render_template('index.html', account=identity['account'])
+    return render_template('index.html')
 
 
 @jwtAPP.expired_token_loader  # 逾期func
@@ -310,8 +311,9 @@ def announcement():
         print(str(td_list[i].contents[0]), type(td_list[i].contents[0]))
     # print(soup.find('tbody').find_all('td'))
     soup = soup.prettify()
-    # print(soup)
-    return soup
+    print(soup)
+    # return soup
+    return render_template('announcement.html')
 
 
 @app.route('/attendance', methods=['GET'])  # 出席
@@ -372,6 +374,23 @@ if __name__ == '__main__':
     app.run(port=app.config.get('PORT'), host=app.config.get('HOST'))
 
 # 公告 圖 時間 標題 內文 瀏覽次數 連結 留言 設備 請假
+# <div class="dropdown-menu show" aria-labelledby="navbarDropdown">
+#   <a class="dropdown-item" href="#">請假</a>
+#   <a class="dropdown-item" href="#">社課資源</a>
+#   <a class="dropdown-item" href="#">設備借用</a>
+#   <a class="dropdown-item" href="/punch-list">打卡紀錄</a>
+#   <!-- 以上為社員功能 -->
+#   <a class="dropdown-item" href="#">請假審核</a>
+#   <a class="dropdown-item" href="#">設備借用審核</a>
+#   <a class="dropdown-item" href="#">上傳社課資源</a>
+#   <a class="dropdown-item" href="/attendance">出席率報表</a>
+#   <a class="dropdown-item" href="/create_qrcode">打卡頁面</a>
+#   <a class="dropdown-item" href="#">設備現況更新</a>
+#   <a class="dropdown-item" href="#">社課錄影</a>
+#   <!-- 以上為幹部功能 -->
+#   <div class="dropdown-divider"></div>
+# </div>
+
 # CSRF refresh
 # @app.route('/refresh', methods=['POST'])
 # @jwt_refresh_token_required
