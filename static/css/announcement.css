@@ -54,3 +54,33 @@
 .blank {
   padding: 15px;
 }
+.img-head {
+  width: 3%;
+}
+.navbar-brand {
+  margin-left: 12px;
+  padding-left: 10px;
+}
+.eachAnnucement {
+  padding-left: 15px;
+  padding-right: 15px;
+  height: 120px;
+}
+.annousement-img-col {
+  text-align: center;
+}
+.annousement-img {
+  width: 30%;
+}
+.annousement-context {
+  height: 70px;
+}
+.time-height {
+  height: 25px;
+}
+.click-percent {
+  margin-left: auto;
+}
+.main-row {
+  height: max-content;
+}
