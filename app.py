@@ -291,29 +291,65 @@ def punch_list():
 
 @app.route('/announcement', methods=['GET'])  # 公告
 def announcement():
-    sql = 'SELECT * FROM announcement;'
-    res = run_sql_select(sql, ())
-    df = DataFrame(res['res'], columns=res['des'])
-    soup = BeautifulSoup(df.to_html(), 'html.parser')
+    # sql = 'SELECT * FROM announcement;'
+    # res = run_sql_select(sql, ())
+    # df = DataFrame(res['res'], columns=res['des'])
+    # soup = BeautifulSoup(df.to_html(), 'html.parser')
+    # # print(soup)
+    # td_list = soup.find('tbody').find_all('td')
+    # for i in range(2, len(td_list), 6):
+    #     img = Image.open(img_path + f'/announcement/{td_list[i].contents[0]}.png')
+    #     img = img.resize((100, 100), Image.BILINEAR)
+    #     buffered = BytesIO()
+    #     img.save(buffered, format="PNG")
+    #     img_str = b64encode(buffered.getvalue()).decode()
+    #     # td_list[i].contents[0] = img_str
+    #     new_tag = soup.new_tag("img")
+    #     new_tag['src'] = f"data:image/png;base64,{img_str}"
+    #     # tag = f'<img src="data:image/png;base64,{img_str}">'
+    #     td_list[i].string.replace_with(new_tag)
+    #     print(str(td_list[i].contents[0]), type(td_list[i].contents[0]))
+    # # print(soup.find('tbody').find_all('td'))
+    # soup = soup.prettify()
     # print(soup)
-    td_list = soup.find('tbody').find_all('td')
-    for i in range(2, len(td_list), 6):
-        img = Image.open(img_path+f'/announcement/{td_list[i].contents[0]}.png')
-        img = img.resize((100, 100), Image.BILINEAR)
-        buffered = BytesIO()
-        img.save(buffered, format="PNG")
-        img_str = b64encode(buffered.getvalue()).decode()
-        # td_list[i].contents[0] = img_str
-        new_tag = soup.new_tag("img")
-        new_tag['src'] = f"data:image/png;base64,{img_str}"
-        # tag = f'<img src="data:image/png;base64,{img_str}">'
-        td_list[i].string.replace_with(new_tag)
-        print(str(td_list[i].contents[0]), type(td_list[i].contents[0]))
-    # print(soup.find('tbody').find_all('td'))
-    soup = soup.prettify()
-    print(soup)
     # return soup
     return render_template('announcement.html')
+
+
+@app.route('/announcement_data', methods=['POST'])  # 出席
+def announcement_data():
+    sql = 'SELECT * FROM announcement;'
+    res = run_sql_select(sql, ())
+    if res is None:
+        return jsonify(None)
+    src_list = []
+    alt_list = []
+    tittle_list = []
+    content_list = []
+    view_list = []
+    date_list = []
+    for i in res['res']:
+        date_list.append(i[1].strftime("%Y/%m/%d %H:%M:%S"))
+        buffered = BytesIO()
+        img = Image.open(img_path + f'/announcement/{i[2]}.png')
+        # img = img.resize((100, 100), Image.BILINEAR)
+        img.save(buffered, format="PNG")
+        img_str = b64encode(buffered.getvalue()).decode()
+        src_list.append(img_str)
+        alt_list.append(i[2])
+        tittle_list.append(i[3])
+        content_list.append(i[4])
+        view_list.append(i[5])
+    data = {
+        'len': len(res['res']),
+        'src': src_list,
+        'alt': alt_list,
+        'tittle': tittle_list,
+        'content': content_list,
+        'view': view_list,
+        'date': date_list
+    }
+    return jsonify(data)
 
 
 @app.route('/attendance', methods=['GET'])  # 出席
@@ -373,23 +409,35 @@ if __name__ == '__main__':
     scheduler.start()
     app.run(port=app.config.get('PORT'), host=app.config.get('HOST'))
 
-# 公告 圖 時間 標題 內文 瀏覽次數 連結 留言 設備 請假
-# <div class="dropdown-menu show" aria-labelledby="navbarDropdown">
-#   <a class="dropdown-item" href="#">請假</a>
-#   <a class="dropdown-item" href="#">社課資源</a>
-#   <a class="dropdown-item" href="#">設備借用</a>
-#   <a class="dropdown-item" href="/punch-list">打卡紀錄</a>
-#   <!-- 以上為社員功能 -->
-#   <a class="dropdown-item" href="#">請假審核</a>
-#   <a class="dropdown-item" href="#">設備借用審核</a>
-#   <a class="dropdown-item" href="#">上傳社課資源</a>
-#   <a class="dropdown-item" href="/attendance">出席率報表</a>
-#   <a class="dropdown-item" href="/create_qrcode">打卡頁面</a>
-#   <a class="dropdown-item" href="#">設備現況更新</a>
-#   <a class="dropdown-item" href="#">社課錄影</a>
-#   <!-- 以上為幹部功能 -->
-#   <div class="dropdown-divider"></div>
-# </div>
+# <div class="row">
+#     <div class="col-2" style="text-align: center;">
+#       <img
+#         src="../static/img/icon/icon02.png"  data:data:image/png;base64,{base64} ...................
+#         alt="iOSClub_icon" .............................
+#         style="width: 70px;"
+#       />
+#     </div>
+#     <div class="col-sm-10">
+#       <div class="row">
+#         <h4>公告標題</h4> ............................
+#       </div>
+#       <div class="row annousement-context">
+#         <p>公告內文：</p> .............................
+#       </div>
+#       <div class="row time-height">
+#         <div class="col-sm-4"></div>
+#         <div class="col-sm-4 down-line">
+#           <p>time : yyyy/mm/dd</p> ............................
+#         </div>
+#         <div class="col-sm-4">
+#           <p class="click-percent">
+#             點擊率： ..........................
+#           </p>
+#         </div>
+#       </div>
+#     </div>
+#     </div>
+#     <hr class="gradient" />
 
 # CSRF refresh
 # @app.route('/refresh', methods=['POST'])

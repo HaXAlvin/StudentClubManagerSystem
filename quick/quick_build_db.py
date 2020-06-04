@@ -37,8 +37,8 @@ cursor = conn.cursor()
 dropTable("class_state")
 dropTable("rtc_state")
 dropTable("memberlist")
-dropTable("announcement")
 dropTable("comment")
+dropTable("announcement")
 
 executeScriptsFromFile('create_table.sql')
 
