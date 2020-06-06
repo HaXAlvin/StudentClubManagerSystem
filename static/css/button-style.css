@@ -54,7 +54,7 @@ b span {
   top: 7px;
   width: 100%;
   height: 100%;
-  background-color: #667f8f;
+  background-color: #fff;
   display: block;
   -webkit-transition: all 0.15s ease-out;
   -moz-transition: all 0.15s ease-out;
@@ -69,11 +69,11 @@ b span {
   width: 100%;
   height: 100%;
   padding: 24px 34px 22px 34px;
-  border: 2px solid #667f8f;
+  border: 2px solid #748ebe;
 }
 
 .button-dark .top {
-  border: 2px solid #fff;
+  border: 2px solid #748ebe;
 }
 
 .button .top .label {
@@ -92,8 +92,9 @@ b span {
 }
 
 .button-dark .top .label {
-  color: #fff;
+  color: #04049d;
 }
+/* 不知道 */
 
 .button:hover .bottom {
   left: 0;
@@ -102,17 +103,19 @@ b span {
 }
 
 .button:hover .top .label {
-  color: #667f8f;
+  color: #e3e2b4;
 }
+/* 我要請假滑鼠in */
 
 .button-border {
   position: absolute;
-  background-color: #9ad6b1;
+  background-color: #e3e2b4;
   -webkit-transition: all 0.25s ease-out;
   -moz-transition: all 0.25s ease-out;
   -o-transition: all 0.25s ease-out;
   transition: all 0.25s ease-out;
 }
+/* border滑鼠in */
 
 .button:hover .top .button-border-left,
 .button:hover .top .button-border-right {

@@ -6,7 +6,7 @@
       name="description"
       content="逢甲大學 iOS Club 為台灣第一個與蘋果合作之社團，希望能透過逢甲 RTC 區域教育培訓中心，讓本社團之學生能夠充分利用學校資源，培養程式設計的基本能力與邏輯觀念。本社團將會規劃許多程式開發課程，從基本的邏輯觀念，到讓同學自行創意發想 App。希冀100%的社員都對 App 有基礎概念，並能熟練程式設計，甚至精熟這項領域。"
     />
-    <title>test</title>
+    <title>請假審核</title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
@@ -28,7 +28,8 @@
       integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
       crossorigin="anonymous"
     ></script>
-    <script src="../static/js/paper-full.min.js"></script>
+    <link rel="stylesheet" href="../static/css/button-style.css" />
+    <link rel="stylesheet" href="../static/css/Audit-DayOff.css" />
   </head>
   <body>
     <!-- <h1>{{account}}'s home</h1> -->
@@ -61,18 +62,35 @@
                 <a
                   class="nav-link dropdown-toggle"
                   href="#"
-                  id="navbarDropdown"
                   role="button"
                   data-toggle="dropdown"
                   aria-haspopup="true"
                   aria-expanded="false"
                 >
-                  more
+                  社員專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                   <a class="dropdown-item" href="#">請假</a>
                   <a class="dropdown-item" href="#">社課資源</a>
                   <a class="dropdown-item" href="#">設備借用</a>
+                </div>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  幹部專屬
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="#">請假</a>
+                  <a class="dropdown-item" href="#">社課資源</a>
+                  <a class="dropdown-item" href="#">設備借用</a>
+                  <div class="dropdown-divider"></div>
                   <!-- 以上為社員功能 -->
                   <a class="dropdown-item" href="#">請假審核</a>
                   <a class="dropdown-item" href="#">設備借用審核</a>
@@ -81,8 +99,6 @@
                   <a class="dropdown-item" href="#">設備現況更新</a>
                   <a class="dropdown-item" href="#">社課錄影</a>
                   <!-- 以上為幹部功能 -->
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#">還沒想好放什麼</a>
                 </div>
               </li>
             </ul>
@@ -93,19 +109,17 @@
         <nav
           class="navbar navbar-expand-lg navbar-light bg-light auto-hide-header"
         >
-          <div class="container">
-            <img
-              src="../static/img/icon_head.png"
-              alt="iOSClub_icon"
-              style="width: 3%;"
-            />
-            <a
-              class="navbar-brand"
-              href="#"
-              style="padding-left: 10px; margin-left: 12px;"
-              >iOS Club</a
-            >
-          </div>
+          <img
+            src="../static/img/icon_head.png"
+            alt="iOSClub_icon"
+            style="width: 3%;"
+          />
+          <a
+            class="navbar-brand"
+            href="#"
+            style="padding-left: 10px; margin-left: 12px;"
+            >iOS Club</a
+          >
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item">
@@ -121,19 +135,43 @@
                 <a
                   class="nav-link dropdown-toggle"
                   href="#"
-                  id="navbarDropdown"
                   role="button"
                   data-toggle="dropdown"
                   aria-haspopup="true"
                   aria-expanded="false"
                 >
-                  more
+                  社員專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="#">Action</a>
-                  <a class="dropdown-item" href="#">Another action</a>
+                  <a class="dropdown-item" href="#">請假</a>
+                  <a class="dropdown-item" href="#">社課資源</a>
+                  <a class="dropdown-item" href="#">設備借用</a>
+                </div>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  幹部專屬
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="#">請假</a>
+                  <a class="dropdown-item" href="#">社課資源</a>
+                  <a class="dropdown-item" href="#">設備借用</a>
                   <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#">Something else here</a>
+                  <!-- 以上為社員功能 -->
+                  <a class="dropdown-item" href="#">請假審核</a>
+                  <a class="dropdown-item" href="#">設備借用審核</a>
+                  <a class="dropdown-item" href="#">上傳社課資源</a>
+                  <a class="dropdown-item" href="#">出席率報表</a>
+                  <a class="dropdown-item" href="#">設備現況更新</a>
+                  <a class="dropdown-item" href="#">社課錄影</a>
+                  <!-- 以上為幹部功能 -->
                 </div>
               </li>
             </ul>
@@ -146,23 +184,59 @@
         </nav>
       </div>
     </header>
-    <script src="../static/js/test.js"></script>
-    <div class="canvas">
-      <canvas
-        resize="true"
-        id="canvas-1"
-        style="
-          background: black;
-          -webkit-user-drag: none;
-          user-select: none;
-          -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-        "
-        width="2432"
-        height="376"
-        data-paper-scope="1"
-        class=""
-      ></canvas>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-5">
+          <hr class="gradiant" />
+          <div class="row row text-padding">
+            <h5>系級 姓名</h5>
+          </div>
+          <div class="row annousement-context row text-padding">
+            <p>請假原因</p>
+          </div>
+          <div class="row text-padding text-padding">
+            <p>日期 &nbsp</p>
+          </div>
+          <hr class="gradiant" />
+        </div>
+        <div class="col-5">
+          <hr class="gradiant" />
+          <div class="row text-padding">
+            <h5>系級 姓名</h5>
+          </div>
+          <div class="row annousement-context text-padding">
+            <p>請假原因</p>
+          </div>
+          <div class="row text-padding">
+            <p>日期 &nbsp</p>
+          </div>
+          <section id="intro">
+            <div id="intro-content" class="center-content">
+              <div class="center-content-inner">
+                <div class="content-section content-section-margin">
+                  <div class="content-section-grid clearfix">
+                    <a href="#" class="button nav-link">
+                      <div class="bottom"></div>
+
+                      <div class="top">
+                        <div class="label">好哇 &nbsp; 給你請</div>
+
+                        <div class="button-border button-border-left"></div>
+                        <div class="button-border button-border-top"></div>
+                        <div class="button-border button-border-right"></div>
+                        <div class="button-border button-border-bottom"></div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <hr class="gradiant" />
+      </div>
     </div>
   </body>
 </html>
-<link rel="stylesheet" type="text/css" href="../static/css/test.css" />
+<script src="../static/js/tmp.js"></script>
+<link rel="stylesheet" type="text/css" href="../static/css/tmp.css" />
