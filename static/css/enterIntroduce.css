@@ -59,5 +59,8 @@
   @include clearfix;
 }
 .between-nav-form {
-  height: 30px;
+  height: 35px;
+}
+.form-context {
+  text-align: center;
 }

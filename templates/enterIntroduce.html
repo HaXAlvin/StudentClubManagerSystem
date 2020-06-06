@@ -28,6 +28,7 @@
       integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
       crossorigin="anonymous"
     ></script>
+    <link rel="stylesheet" href="../static/css/inputDesign.css" />
   </head>
   <body>
     <!-- <h1>{{account}}'s home</h1> -->
@@ -152,23 +153,47 @@
     </header>
     <div class="container">
       <div class="between-nav-form"></div>
-      <form action="" class="form-context">
-        <p>
-          生日：
-          <input type="date" name="birthday" />
-        </p>
-        <p>
-          請輸入舊密碼：
-          <input type="password" name="past password" />
-        </p>
-        <p>
-          請輸入新密碼：
-          <input type="password" name="new password" />
-        </p>
-        <p>
-          再次輸入新密碼：
-          <input type="password" name="new password again" />
-        </p>
+      <form action="">
+        <div class="form__group field">
+          <input
+            type="date"
+            class="form__field"
+            placeholder="Name"
+            name="name"
+            required
+          />
+          <label for="name" class="form__label">生日</label>
+        </div>
+        <div class="form__group field">
+          <input
+            type="password"
+            class="form__field"
+            placeholder="Name"
+            name="name"
+            required
+          />
+          <label for="name" class="form__label">舊密碼</label>
+        </div>
+        <div class="form__group field">
+          <input
+            type="password"
+            class="form__field"
+            placeholder="Name"
+            name="name"
+            required
+          />
+          <label for="name" class="form__label">新密碼</label>
+        </div>
+        <div class="form__group field">
+          <input
+            type="password"
+            class="form__field"
+            placeholder="Name"
+            name="name"
+            required
+          />
+          <label for="name" class="form__label">再次輸入新密碼</label>
+        </div>
       </form>
     </div>
   </body>

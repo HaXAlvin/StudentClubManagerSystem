@@ -6,7 +6,7 @@
       name="description"
       content="逢甲大學 iOS Club 為台灣第一個與蘋果合作之社團，希望能透過逢甲 RTC 區域教育培訓中心，讓本社團之學生能夠充分利用學校資源，培養程式設計的基本能力與邏輯觀念。本社團將會規劃許多程式開發課程，從基本的邏輯觀念，到讓同學自行創意發想 App。希冀100%的社員都對 App 有基礎概念，並能熟練程式設計，甚至精熟這項領域。"
     />
-    <title>day</title>
+    <title>dayOff</title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
@@ -28,6 +28,7 @@
       integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
       crossorigin="anonymous"
     ></script>
+    <link rel="stylesheet" href="../static/css/button-style.css" />
   </head>
   <body>
     <!-- <h1>{{account}}'s home</h1> -->
@@ -151,8 +152,9 @@
       </div>
     </header>
     <div class="container">
-      <form action="" id="form-context">
-        <p>
+      <div class="container" style="height: 35px;"></div>
+      <form action="" id="form-context" style="text-align: center;">
+        <p class="justify-content-end">
           請假日期：
           <input type="date" />
         </p>
@@ -164,7 +166,34 @@
             <option value="menstrual-leave">生理假</option>
           </select>
         </p>
+        <p>
+          請假原因：
+          <textarea name="textarea" rows="3" cols="30" style="font-size: 16px;">
+          </textarea>
+        </p>
       </form>
+      <section id="intro">
+        <div id="intro-content" class="center-content">
+          <div class="center-content-inner">
+            <div class="content-section content-section-margin">
+              <div class="content-section-grid clearfix">
+                <a href="#" class="button nav-link">
+                  <div class="bottom"></div>
+
+                  <div class="top">
+                    <div class="label">我要請假</div>
+
+                    <div class="button-border button-border-left"></div>
+                    <div class="button-border button-border-top"></div>
+                    <div class="button-border button-border-right"></div>
+                    <div class="button-border button-border-bottom"></div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </body>
 </html>
