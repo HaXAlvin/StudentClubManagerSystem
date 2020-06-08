@@ -1,6 +1,11 @@
 var bodyClass = $(".auto-hide-header"),
   lastScrollY = 0;
 
+function validateEmail($email) {
+  var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,6})?$/;
+  return ($email.length > 0 && emailReg.test($email));
+}
+
 $(document).ready(function () {
   bodyClass.addClass("hideUp");
   var male = 1;
@@ -18,7 +23,7 @@ $(document).ready(function () {
     date = $('input[name="date"]').val();
     account = $('input[name="account"]').val();
     // console.log(password_new_one);
-    if (psw_new_one!=psw_new_two||!psw_old||!psw_new_one||!psw_new_two||!email||!date||!account){
+    if (!validateEmail(email)&&(psw_new_one!=psw_new_two||!psw_old||!psw_new_one||!psw_new_two||!email||!date||!account)){
       return;
     }
     console.log(email);

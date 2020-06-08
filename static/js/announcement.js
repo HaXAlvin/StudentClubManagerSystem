@@ -50,6 +50,7 @@ $(document).ready(function () {
         newanno = newanno.replace("{alt}", res["alt"][i]);
         newanno = newanno.replace("{title}", res["title"][i]);
         newanno = newanno.replace("{content}", res["content"][i]);
+        newanno = newanno.replace(/\\n/g,"");
         newanno = newanno.replace("{date}", res["date"][i]);
         newanno = newanno.replace("{view}", res["view"][i]);
         $("#annos").append(newanno);
