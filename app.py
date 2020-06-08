@@ -32,7 +32,7 @@ class Config:
     # db set
     DB_PORT = 3306
     DB_USER = 'root'
-    DB_PWD = '0000'
+    DB_PWD = 'qwer25604677'
     DB_NAME = 'iosclub'
     DB_CHARSET = 'utf8mb4'
     # qrcode set

@@ -28,7 +28,7 @@ conn = pymysql.connect(
     host='127.0.0.1',
     port=3306,
     user='root',
-    passwd='0000',
+    passwd='qwer25604677',
     db='iosclub',
     charset='utf8mb4',
 )
@@ -47,7 +47,8 @@ for i in range(df.shape[1]):
     seed = df[i][2] if df[i][9] == 'None' else df[i][9]
     pwd = sha512(seed.encode('utf-8')).hexdigest().upper()
     manager = df[i][10]
-    val = (df[i][0], df[i][1], df[i][2], df[i][3], df[i][4], df[i][5], df[i][6], df[i][7], df[i][8], pwd, manager)
+    val = (df[i][0], df[i][1], df[i][2], df[i][3], df[i][4],
+           df[i][5], df[i][6], df[i][7], df[i][8], pwd, manager)
     print(val)
     sql = "insert into memberlist VALUE (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0);"
     cursor.execute(sql, val)
