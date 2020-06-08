@@ -127,16 +127,16 @@ def login():
     access_token = jwt_create_token('access', account)
     refresh_token = jwt_create_token('refresh', account)
     get_next = request.json.get('next', None).replace('%2F', '/')
+    print(get_next)
     if results['res'][0][2] == 0:
-        next_page = 'enterIntroduce'
+        next_page = '/enterIntroduce'
     else:
         next_page = '/' if not get_next else get_next
-        res = run_sql_update(
-            "UPDATE memberlist SET login_count = login_count+1")
-        print(res)
+    # res = run_sql_update("UPDATE memberlist SET login_count = login_count+1")
+    # print(res)
+
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
-    # resp = redirect(url, code=302)
     jwt.set_access_cookies(resp, access_token)
     jwt.set_refresh_cookies(resp, refresh_token)
     return resp
@@ -148,21 +148,26 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/enterIntroduce', methods=['GET', 'POST'])
+@app.route('/enterIntroduce', methods=['GET'])
 @jwt.jwt_optional
 def enterIntroduce():
+    print(jwt.get_jwt_identity())
+    return render_template('enterIntroduce.html')
+
+
+@app.route('/updateIntroduce', methods=['POST'])
+def updateIntroduce():
     identity = jwt.get_jwt_identity()
-    print(identity)
+    print('iden:', identity)
     if not identity:
         return redirect(url_for('login', next='/enterIntroduce'))
-    if request.method == 'GET':
-        return render_template('enterIntroduce.html')
     data = request.get_json()
+    print(data)
     sql = "SELECT member_nid,password,login_count FROM memberList WHERE member_nid = %s;"
     results = run_sql_select(sql, identity['account'])
     if results is None or sha512(data['pwd_old'].encode('utf-8')).hexdigest().upper() != results['res'][0][1]:
         return jsonify({"login": False, "msg": "Bad account or password"}), 401
-    return
+    # return redirect(url_for('/'))
 
 
 @jwtAPP.expired_token_loader  # 逾期func
