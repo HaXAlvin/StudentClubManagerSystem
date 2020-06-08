@@ -17,8 +17,8 @@ $(document).ready(function () {
           <h4>{title}</h4>
 
         </div>
-        <div class="row annousement-context">
-          <p>{content}</p>
+        <div class="row annousement-context context-box">
+          <p class="overflowed">{content}</p>
         </div>
         <div class="row time-height">
           <div class="col-sm-4"></div>
