@@ -76,12 +76,11 @@ while True:
 
 
 def jwt_create_token(types, account):
-    method = {'access': jwt.create_access_token,
-              'refresh': jwt.create_refresh_token}
+    method = {'access': jwt.create_access_token, 'refresh': jwt.create_refresh_token}
     return method[types](identity={'account': account}, headers={"typ": "JWT", "alg": "HS256"})
 
 
-def run_sql_select(sql, val):  # only select
+def run_sql(sql, val, types):
     try:
         conn.ping(reconnect=True)
         with conn.cursor() as cursor:
@@ -89,22 +88,18 @@ def run_sql_select(sql, val):  # only select
             res = cursor.fetchall()
             if not res:
                 return None
-            description = [i[0] for i in cursor.description]
-            return {'res': res, 'des': description}
+            if types == 'update':
+                return res
+            if types == 'select':
+                description = [i[0] for i in cursor.description]
+                return {'res': res, 'des': description}
     except pymysql.err as msg:
         print(f'**{msg}**')
         return None
 
 
-def run_sql_update(sql):
-    try:
-        conn.ping(reconnect=True)
-        with conn.cursor() as cursor:
-            cursor.execute(sql)
-            return cursor.fetchall()
-    except pymysql.err as msg:
-        print(f'**{msg}**')
-        return None
+def psw_encrypt(psw):
+    return sha512(psw.encode('utf-8')).hexdigest().upper()
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -121,8 +116,8 @@ def login():
     if not password:
         return jsonify({"login": False, "msg": "Missing password parameter"}), 400
     sql = "SELECT member_nid,password,login_count FROM memberList WHERE member_nid = %s;"
-    results = run_sql_select(sql, account)
-    if results is None or sha512(password.encode('utf-8')).hexdigest().upper() != results['res'][0][1]:
+    results = run_sql(sql, account, 'select')
+    if results is None or psw_encrypt(password) != results['res'][0][1]:
         return jsonify({"login": False, "msg": "Bad account or password"}), 401
     access_token = jwt_create_token('access', account)
     refresh_token = jwt_create_token('refresh', account)
@@ -132,9 +127,8 @@ def login():
         next_page = '/enterIntroduce'
     else:
         next_page = '/' if not get_next else get_next
-    # res = run_sql_update("UPDATE memberlist SET login_count = login_count+1")
-    # print(res)
-
+        res = run_sql("UPDATE memberlist SET login_count = login_count+1", (), 'update')
+        print(res)
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
     jwt.set_access_cookies(resp, access_token)
@@ -151,23 +145,31 @@ def index():
 @app.route('/enterIntroduce', methods=['GET'])
 @jwt.jwt_optional
 def enterIntroduce():
-    print(jwt.get_jwt_identity())
-    return render_template('enterIntroduce.html')
+    identity = jwt.get_jwt_identity()
+    if identity is None:
+        return redirect(url_for('login', next='/enterIntroduce'))
+    return render_template('enterIntroduce.html', account=identity['account'])
 
 
 @app.route('/updateIntroduce', methods=['POST'])
 def updateIntroduce():
-    identity = jwt.get_jwt_identity()
-    print('iden:', identity)
-    if not identity:
-        return redirect(url_for('login', next='/enterIntroduce'))
     data = request.get_json()
     print(data)
     sql = "SELECT member_nid,password,login_count FROM memberList WHERE member_nid = %s;"
-    results = run_sql_select(sql, identity['account'])
-    if results is None or sha512(data['pwd_old'].encode('utf-8')).hexdigest().upper() != results['res'][0][1]:
+    results = run_sql(sql, data['account'], 'select')
+    if results is None or psw_encrypt(data['psw_old']) != results['res'][0][1]:
         return jsonify({"login": False, "msg": "Bad account or password"}), 401
-    # return redirect(url_for('/'))
+    sex = 'M' if data['male'] else 'F'
+    psw = psw_encrypt(data['psw_new'])
+    val = (psw, sex, data['date'], data['email'])
+    sql = "UPDATE memberlist SET password=%s,sex=%s,birth=%s,`e-mail`=%s,login_count=login_count+1"
+    res = run_sql(sql, val, 'update')
+    print(res)
+    if not res:
+        res = jsonify({'login': True, 'update': True})
+        jwt.unset_jwt_cookies(res)
+        return res
+    return jsonify({'login': True, 'update': False})
 
 
 @jwtAPP.expired_token_loader  # 逾期func
@@ -183,12 +185,11 @@ def search_name():
     res = {'result': 'no'}
     sql = "SELECT * FROM memberList WHERE member_name LIKE %s;"
     val = '%' + request.json.get('data', None) + '%'
-    results = run_sql_select(sql, val)
+    results = run_sql(sql, val, 'select')
     if results is None:
         res['result'] = 'No data found'
     else:
-        df = DataFrame(list(results['res']),
-                       columns=results['des'])  # make a frame
+        df = DataFrame(list(results['res']), columns=results['des'])  # make a frame
         # turn into html table
         soup = BeautifulSoup(df.to_html(), 'html.parser')
         soup.find('table')['class'] = 'table'  # edit html
@@ -209,8 +210,7 @@ def query():
             if not results:
                 res['result'] = 'Success'
             else:
-                df = DataFrame(list(results), columns=[
-                               i[0] for i in cursor.description])  # make a frame
+                df = DataFrame(list(results), columns=[i[0] for i in cursor.description])  # make a frame
                 # turn into html table
                 soup = BeautifulSoup(df.to_html(), 'html.parser')
                 soup.find('table')['class'] = 'table'  # edit html
@@ -242,7 +242,7 @@ def create_qrcode():
     if identity is None:
         return redirect(url_for('login', next='create_qrcode'))
     sql = 'SELECT member_nid, manager FROM memberlist where member_nid = %s;'
-    results = run_sql_select(sql, identity['account'])
+    results = run_sql(sql, identity['account'], 'select')
     if results is None:
         return 'error'
     accept = False if results['res'][0][1] == 0 else True
@@ -250,8 +250,7 @@ def create_qrcode():
         return redirect(url_for('index'))
     code = ''.join(choice(ascii_letters)
                    for _ in range(app.config.get('QRCODE_LEN')))
-    record = {'code': code, 'expired': datetime.now() +
-              app.config.get('QRCODE_EXPIRED')}
+    record = {'code': code, 'expired': datetime.now() + app.config.get('QRCODE_EXPIRED')}
     punch_record.append(record)
     url = f'/punch_in/{code}'
     qrcode = pyqrcode.create(
@@ -260,8 +259,7 @@ def create_qrcode():
     img = Image.open(img_path + '/qrcode.png')
     img = img.convert("RGBA")
     icon_size = ((img.width ** 2) * 0.08) ** 0.5
-    shapes = [int(img.width / 2 - icon_size / 2) if i <
-              2 else int(img.width / 2 + icon_size / 2) for i in range(4)]
+    shapes = [int(img.width / 2 - icon_size / 2) if i < 2 else int(img.width / 2 + icon_size / 2) for i in range(4)]
     img.crop(shapes)
     logo = choice(logos).resize((shapes[2] - shapes[0], shapes[3] - shapes[1]))
     logo.convert('RGBA')
@@ -318,7 +316,7 @@ def punch_list():
     if identity is None:
         return redirect(url_for('login', next='/punch_list'))
     sql = "SELECT date FROM class_state WHERE member_id = (SELECT member_id FROM memberlist WHERE member_nid = %s);"
-    res = run_sql_select(sql, identity['account'])
+    res = run_sql(sql, identity['account'], 'select')
     if res is None:
         return jsonify({'msg': 'fail'})
     else:
@@ -359,8 +357,7 @@ def announcement():
 
 @app.route('/announcement_data', methods=['POST'])  # 出席
 def announcement_data():
-    sql = 'SELECT * FROM announcement;'
-    res = run_sql_select(sql, ())
+    res = run_sql('SELECT * FROM announcement;', (), 'select')
     if res is None:
         return jsonify(None)
     data = {'len': len(res['res']), 'src': [], 'alt': [],

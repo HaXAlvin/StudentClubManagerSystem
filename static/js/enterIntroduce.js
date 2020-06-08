@@ -16,8 +16,9 @@ $(document).ready(function () {
     psw_new_one = $('input[name="password_new_one"]').val();
     psw_new_two = $('input[name="password_new_two"]').val();
     date = $('input[name="date"]').val();
+    account = $('input[name="account"]').val();
     // console.log(password_new_one);
-    if (psw_new_one!=psw_new_two||!psw_old||!psw_new_one||!psw_new_two||!email||!date){
+    if (psw_new_one!=psw_new_two||!psw_old||!psw_new_one||!psw_new_two||!email||!date||!account){
       return;
     }
     console.log(email);
@@ -25,17 +26,28 @@ $(document).ready(function () {
     console.log(psw_new_two);
     console.log(psw_new_one);
     console.log(date);
+    console.log(male);
+    console.log(account);
     $.ajax({
       type:"POST",
       url: '/updateIntroduce',
-      data:JSON.stringify({'email':email,'psw_old':psw_old, 'psw_new':psw_new_one,'date':date,'male':male}),
+      data:JSON.stringify({
+        'email':email,
+        'psw_old':psw_old,
+        'psw_new':psw_new_one,
+        'date':date,
+        'male':male,
+        'account':account
+      }),
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function(res) {
-        console.log(123);
+        console.log(res);
+        if(res['login'] == true && res['update'] == true){
+          $(location). attr('href','/login');
+        }
       }
     });
-    console.log(male);
     // $('#huey').prop("checked",true);
   });
   // $("input[name='password_new_one']").keyup(function(){
