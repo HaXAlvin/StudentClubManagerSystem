@@ -6,11 +6,11 @@ $(document).ready(function () {
 });
 
 // var bodyClass = document.body.classList,
-//   lastScrollY = 0;
+// lastScrollY = 0;
 window.addEventListener("scroll", function () {
   var st = this.scrollY;
-  //   this.console.log(this.scrollY);
-  //bodyClass.addClass("hideUp");
+  // this.console.log(this.scrollY);
+  // bodyClass.addClass("hideUp");
   // 判斷是向上捲動，而且捲軸超過 200px
   if (st == 0) {
     bodyClass.addClass("hideUp");

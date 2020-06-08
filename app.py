@@ -32,7 +32,7 @@ class Config:
     # db set
     DB_PORT = 3306
     DB_USER = 'root'
-    DB_PWD = '0000'
+    DB_PWD = 'qwer25604677'
     DB_NAME = 'iosclub'
     DB_CHARSET = 'utf8mb4'
     # qrcode set
@@ -76,7 +76,8 @@ while True:
 
 
 def jwt_create_token(types, account):
-    method = {'access': jwt.create_access_token, 'refresh': jwt.create_refresh_token}
+    method = {'access': jwt.create_access_token,
+              'refresh': jwt.create_refresh_token}
     return method[types](identity={'account': account}, headers={"typ": "JWT", "alg": "HS256"})
 
 
@@ -130,7 +131,8 @@ def login():
         next_page = 'enterIntroduce'
     else:
         next_page = '/' if not get_next else get_next
-        res = run_sql_update("UPDATE memberlist SET login_count = login_count+1")
+        res = run_sql_update(
+            "UPDATE memberlist SET login_count = login_count+1")
         print(res)
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
@@ -180,8 +182,10 @@ def search_name():
     if results is None:
         res['result'] = 'No data found'
     else:
-        df = DataFrame(list(results['res']), columns=results['des'])  # make a frame
-        soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
+        df = DataFrame(list(results['res']),
+                       columns=results['des'])  # make a frame
+        # turn into html table
+        soup = BeautifulSoup(df.to_html(), 'html.parser')
         soup.find('table')['class'] = 'table'  # edit html
         res['result'] = soup.prettify()  # turn soup object to str
     return jsonify(res)  # 回傳json格式
@@ -200,8 +204,10 @@ def query():
             if not results:
                 res['result'] = 'Success'
             else:
-                df = DataFrame(list(results), columns=[i[0] for i in cursor.description])  # make a frame
-                soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
+                df = DataFrame(list(results), columns=[
+                               i[0] for i in cursor.description])  # make a frame
+                # turn into html table
+                soup = BeautifulSoup(df.to_html(), 'html.parser')
                 soup.find('table')['class'] = 'table'  # edit html
                 res['result'] = soup.prettify()  # turn soup object to str
     except Exception as error_message:
@@ -237,16 +243,20 @@ def create_qrcode():
     accept = False if results['res'][0][1] == 0 else True
     if accept is False:
         return redirect(url_for('index'))
-    code = ''.join(choice(ascii_letters) for _ in range(app.config.get('QRCODE_LEN')))
-    record = {'code': code, 'expired': datetime.now() + app.config.get('QRCODE_EXPIRED')}
+    code = ''.join(choice(ascii_letters)
+                   for _ in range(app.config.get('QRCODE_LEN')))
+    record = {'code': code, 'expired': datetime.now() +
+              app.config.get('QRCODE_EXPIRED')}
     punch_record.append(record)
     url = f'/punch_in/{code}'
-    qrcode = pyqrcode.create(f'{app.config.get("HOST")}:{app.config.get("PORT")}{url}', error='H')
+    qrcode = pyqrcode.create(
+        f'{app.config.get("HOST")}:{app.config.get("PORT")}{url}', error='H')
     qrcode.png(img_path + '/qrcode.png', scale=14)  # 33*14
     img = Image.open(img_path + '/qrcode.png')
     img = img.convert("RGBA")
     icon_size = ((img.width ** 2) * 0.08) ** 0.5
-    shapes = [int(img.width / 2 - icon_size / 2) if i < 2 else int(img.width / 2 + icon_size / 2) for i in range(4)]
+    shapes = [int(img.width / 2 - icon_size / 2) if i <
+              2 else int(img.width / 2 + icon_size / 2) for i in range(4)]
     img.crop(shapes)
     logo = choice(logos).resize((shapes[2] - shapes[0], shapes[3] - shapes[1]))
     logo.convert('RGBA')
@@ -308,7 +318,8 @@ def punch_list():
         return jsonify({'msg': 'fail'})
     else:
         df = DataFrame(res['res'], columns=res['des'])  # make a frame
-        soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
+        # turn into html table
+        soup = BeautifulSoup(df.to_html(), 'html.parser')
         soup.find('table')['class'] = 'table'  # edit html
         soup = soup.prettify()  # turn soup object to str
         return soup
@@ -347,7 +358,8 @@ def announcement_data():
     res = run_sql_select(sql, ())
     if res is None:
         return jsonify(None)
-    data = {'len': len(res['res']), 'src': [], 'alt': [], 'title': [], 'content': [], 'view': [], 'date': []}
+    data = {'len': len(res['res']), 'src': [], 'alt': [],
+            'title': [], 'content': [], 'view': [], 'date': []}
     for i in res['res']:
         data['date'].append(i[1].strftime("%Y/%m/%d %H:%M:%S"))
         data['alt'].append(i[2])
@@ -355,7 +367,8 @@ def announcement_data():
         data['content'].append(i[4])
         data['view'].append(i[5])
         buffered = BytesIO()
-        (Image.open(img_path + f'/announcement/{i[2]}.png')).save(buffered, format="PNG")
+        (Image.open(img_path +
+                    f'/announcement/{i[2]}.png')).save(buffered, format="PNG")
         data['src'].append(b64encode(buffered.getvalue()).decode())
     print(data)
     return jsonify(data)
@@ -393,7 +406,8 @@ def attendance():
         else:
             data[row_date][update_index] = '-'
     dataFrame = DataFrame(data)
-    soup = BeautifulSoup(dataFrame.to_html(), 'html.parser')  # turn into html table
+    # turn into html table
+    soup = BeautifulSoup(dataFrame.to_html(), 'html.parser')
     # soup.find('table')['class'] = 'table'  # edit html
     return soup.prettify()
 
