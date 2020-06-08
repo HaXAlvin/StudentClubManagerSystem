@@ -49,7 +49,7 @@ for i in range(df.shape[1]):
     manager = df[i][10]
     val = (df[i][0], df[i][1], df[i][2], df[i][3], df[i][4], df[i][5], df[i][6], df[i][7], df[i][8], pwd, manager)
     print(val)
-    sql = "insert into memberlist VALUE (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+    sql = "insert into memberlist VALUE (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0);"
     cursor.execute(sql, val)
 conn.commit()
 
@@ -77,5 +77,3 @@ for i in range(df.shape[1]):
     sql = "insert into announcement VALUE (%s,%s,%s,%s,%s,%s);"
     cursor.execute(sql, val)
 conn.commit()
-
-

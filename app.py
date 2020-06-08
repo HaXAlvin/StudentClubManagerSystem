@@ -32,7 +32,7 @@ class Config:
     # db set
     DB_PORT = 3306
     DB_USER = 'root'
-    DB_PWD = 'qwer25604677'
+    DB_PWD = '0000'
     DB_NAME = 'iosclub'
     DB_CHARSET = 'utf8mb4'
     # qrcode set
@@ -76,8 +76,7 @@ while True:
 
 
 def jwt_create_token(types, account):
-    method = {'access': jwt.create_access_token,
-              'refresh': jwt.create_refresh_token}
+    method = {'access': jwt.create_access_token, 'refresh': jwt.create_refresh_token}
     return method[types](identity={'account': account}, headers={"typ": "JWT", "alg": "HS256"})
 
 
@@ -87,10 +86,21 @@ def run_sql_select(sql, val):  # only select
         with conn.cursor() as cursor:
             cursor.execute(sql, val)
             res = cursor.fetchall()
-            if res == ():
+            if not res:
                 return None
             description = [i[0] for i in cursor.description]
             return {'res': res, 'des': description}
+    except pymysql.err as msg:
+        print(f'**{msg}**')
+        return None
+
+
+def run_sql_update(sql):
+    try:
+        conn.ping(reconnect=True)
+        with conn.cursor() as cursor:
+            cursor.execute(sql)
+            return cursor.fetchall()
     except pymysql.err as msg:
         print(f'**{msg}**')
         return None
@@ -109,14 +119,19 @@ def login():
         return jsonify({"login": False, "msg": "Missing account parameter"}), 400
     if not password:
         return jsonify({"login": False, "msg": "Missing password parameter"}), 400
-    sql = "SELECT member_nid,password FROM memberList WHERE member_nid = %s;"
+    sql = "SELECT member_nid,password,login_count FROM memberList WHERE member_nid = %s;"
     results = run_sql_select(sql, account)
     if results is None or sha512(password.encode('utf-8')).hexdigest().upper() != results['res'][0][1]:
         return jsonify({"login": False, "msg": "Bad account or password"}), 401
     access_token = jwt_create_token('access', account)
     refresh_token = jwt_create_token('refresh', account)
-    next_page = request.json.get('next', None).replace('%2F', '/')
-    next_page = '/' if next_page == "" else next_page
+    get_next = request.json.get('next', None).replace('%2F', '/')
+    if results['res'][0][2] == 0:
+        next_page = 'enterIntroduce'
+    else:
+        next_page = '/' if not get_next else get_next
+        res = run_sql_update("UPDATE memberlist SET login_count = login_count+1")
+        print(res)
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
     # resp = redirect(url, code=302)
@@ -127,15 +142,25 @@ def login():
 
 @app.route('/index', methods=['GET'])
 @app.route('/', methods=['GET'])
-# @jwt.jwt_optional
 def index():
-    identity = jwt.get_jwt_identity()
-    print('index identity:', identity)
-    # if identity is None:
-    #     resp = redirect(url_for('login', next='/'))
-    #     return resp
-    # return render_template('index.html', account=identity['account'])
     return render_template('index.html')
+
+
+@app.route('/enterIntroduce', methods=['GET', 'POST'])
+@jwt.jwt_optional
+def enterIntroduce():
+    identity = jwt.get_jwt_identity()
+    print(identity)
+    if not identity:
+        return redirect(url_for('login', next='/enterIntroduce'))
+    if request.method == 'GET':
+        return render_template('enterIntroduce.html')
+    data = request.get_json()
+    sql = "SELECT member_nid,password,login_count FROM memberList WHERE member_nid = %s;"
+    results = run_sql_select(sql, identity['account'])
+    if results is None or sha512(data['pwd_old'].encode('utf-8')).hexdigest().upper() != results['res'][0][1]:
+        return jsonify({"login": False, "msg": "Bad account or password"}), 401
+    return
 
 
 @jwtAPP.expired_token_loader  # 逾期func
@@ -152,14 +177,11 @@ def search_name():
     sql = "SELECT * FROM memberList WHERE member_name LIKE %s;"
     val = '%' + request.json.get('data', None) + '%'
     results = run_sql_select(sql, val)
-    if not results:
+    if results is None:
         res['result'] = 'No data found'
     else:
-        df = DataFrame(list(results['res']),
-                       columns=results['des'])  # make a frame
-        # df = DataFrame(results[0])
-        # turn into html table
-        soup = BeautifulSoup(df.to_html(), 'html.parser')
+        df = DataFrame(list(results['res']), columns=results['des'])  # make a frame
+        soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
         soup.find('table')['class'] = 'table'  # edit html
         res['result'] = soup.prettify()  # turn soup object to str
     return jsonify(res)  # 回傳json格式
@@ -178,10 +200,8 @@ def query():
             if not results:
                 res['result'] = 'Success'
             else:
-                df = DataFrame(list(results), columns=[
-                               i[0] for i in cursor.description])  # make a frame
-                # turn into html table
-                soup = BeautifulSoup(df.to_html(), 'html.parser')
+                df = DataFrame(list(results), columns=[i[0] for i in cursor.description])  # make a frame
+                soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
                 soup.find('table')['class'] = 'table'  # edit html
                 res['result'] = soup.prettify()  # turn soup object to str
     except Exception as error_message:
@@ -199,9 +219,9 @@ def search():
     return render_template('search.html')
 
 
-@app.route('/sign_up', methods=['GET'])
-def sign_up():
-    return render_template('sign_up.html')
+# @app.route('/sign_up', methods=['GET'])
+# def sign_up():
+#     return render_template('sign_up.html')
 
 
 @app.route('/create_qrcode', methods=['GET'])
@@ -217,20 +237,16 @@ def create_qrcode():
     accept = False if results['res'][0][1] == 0 else True
     if accept is False:
         return redirect(url_for('index'))
-    code = ''.join(choice(ascii_letters)
-                   for _ in range(app.config.get('QRCODE_LEN')))
-    record = {'code': code, 'expired': datetime.now() +
-              app.config.get('QRCODE_EXPIRED')}
+    code = ''.join(choice(ascii_letters) for _ in range(app.config.get('QRCODE_LEN')))
+    record = {'code': code, 'expired': datetime.now() + app.config.get('QRCODE_EXPIRED')}
     punch_record.append(record)
     url = f'/punch_in/{code}'
-    qrcode = pyqrcode.create(
-        f'{app.config.get("HOST")}:{app.config.get("PORT")}{url}', error='H')
+    qrcode = pyqrcode.create(f'{app.config.get("HOST")}:{app.config.get("PORT")}{url}', error='H')
     qrcode.png(img_path + '/qrcode.png', scale=14)  # 33*14
     img = Image.open(img_path + '/qrcode.png')
     img = img.convert("RGBA")
     icon_size = ((img.width ** 2) * 0.08) ** 0.5
-    shapes = [int(img.width / 2 - icon_size / 2) if i <
-              2 else int(img.width / 2 + icon_size / 2) for i in range(4)]
+    shapes = [int(img.width / 2 - icon_size / 2) if i < 2 else int(img.width / 2 + icon_size / 2) for i in range(4)]
     img.crop(shapes)
     logo = choice(logos).resize((shapes[2] - shapes[0], shapes[3] - shapes[1]))
     logo.convert('RGBA')
@@ -292,8 +308,7 @@ def punch_list():
         return jsonify({'msg': 'fail'})
     else:
         df = DataFrame(res['res'], columns=res['des'])  # make a frame
-        # turn into html table
-        soup = BeautifulSoup(df.to_html(), 'html.parser')
+        soup = BeautifulSoup(df.to_html(), 'html.parser')  # turn into html table
         soup.find('table')['class'] = 'table'  # edit html
         soup = soup.prettify()  # turn soup object to str
         return soup
@@ -332,33 +347,17 @@ def announcement_data():
     res = run_sql_select(sql, ())
     if res is None:
         return jsonify(None)
-    src_list = []
-    alt_list = []
-    title_list = []
-    content_list = []
-    view_list = []
-    date_list = []
+    data = {'len': len(res['res']), 'src': [], 'alt': [], 'title': [], 'content': [], 'view': [], 'date': []}
     for i in res['res']:
-        date_list.append(i[1].strftime("%Y/%m/%d %H:%M:%S"))
+        data['date'].append(i[1].strftime("%Y/%m/%d %H:%M:%S"))
+        data['alt'].append(i[2])
+        data['title'].append(i[3])
+        data['content'].append(i[4])
+        data['view'].append(i[5])
         buffered = BytesIO()
-        img = Image.open(img_path + f'/announcement/{i[2]}.png')
-        # img = img.resize((100, 100), Image.BILINEAR)
-        img.save(buffered, format="PNG")
-        img_str = b64encode(buffered.getvalue()).decode()
-        src_list.append(img_str)
-        alt_list.append(i[2])
-        title_list.append(i[3])
-        content_list.append(i[4])
-        view_list.append(i[5])
-    data = {
-        'len': len(res['res']),
-        'src': src_list,
-        'alt': alt_list,
-        'title': title_list,
-        'content': content_list,
-        'view': view_list,
-        'date': date_list
-    }
+        (Image.open(img_path + f'/announcement/{i[2]}.png')).save(buffered, format="PNG")
+        data['src'].append(b64encode(buffered.getvalue()).decode())
+    print(data)
     return jsonify(data)
 
 
@@ -381,10 +380,7 @@ def attendance():
     except pymysql.err.OperationalError as e:
         print(e)
         return e
-    data = {
-        'id': member_id,
-        'name': member_name
-    }
+    data = {'id': member_id, 'name': member_name}
     for row in results:
         row_date = row[2].strftime("%Y-%m-%d")
         if row_date not in data.keys():
@@ -397,10 +393,14 @@ def attendance():
         else:
             data[row_date][update_index] = '-'
     dataFrame = DataFrame(data)
-    # turn into html table
-    soup = BeautifulSoup(dataFrame.to_html(), 'html.parser')
+    soup = BeautifulSoup(dataFrame.to_html(), 'html.parser')  # turn into html table
     # soup.find('table')['class'] = 'table'  # edit html
     return soup.prettify()
+
+
+@app.route('/ChangePassword', methods=['GET'])
+def ChangePassword():
+    return render_template('ChangePassword.html')
 
 
 def clean_record():  # clean qrcode list every specific time
@@ -419,36 +419,6 @@ if __name__ == '__main__':
     scheduler.init_app(app)
     scheduler.start()
     app.run(port=app.config.get('PORT'), host=app.config.get('HOST'))
-
-# <div class="row">
-#     <div class="col-2" style="text-align: center;">
-#       <img
-#         src="../static/img/icon/icon02.png"  data:data:image/png;base64,{base64} ...................
-#         alt="iOSClub_icon" .............................
-#         style="width: 70px;"
-#       />
-#     </div>
-#     <div class="col-sm-10">
-#       <div class="row">
-#         <h4>公告標題</h4> ............................
-#       </div>
-#       <div class="row annousement-context">
-#         <p>公告內文：</p> .............................
-#       </div>
-#       <div class="row time-height">
-#         <div class="col-sm-4"></div>
-#         <div class="col-sm-4 down-line">
-#           <p>time : yyyy/mm/dd</p> ............................
-#         </div>
-#         <div class="col-sm-4">
-#           <p class="click-percent">
-#             點擊率： ..........................
-#           </p>
-#         </div>
-#       </div>
-#     </div>
-#     </div>
-#     <hr class="gradient" />
 
 # CSRF refresh
 # @app.route('/refresh', methods=['POST'])

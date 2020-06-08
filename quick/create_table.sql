@@ -11,6 +11,7 @@ CREATE TABLE `memberlist` (
   `birth` date not null DEFAULT '1001-01-01',
   `password` varchar(150) not null,
   `manager` bool not null,
+  `login_count` int unsigned not null default 0,
   PRIMARY KEY (`member_id`)
 );
 
@@ -38,8 +39,8 @@ create table `announcement`(
     `announcement_id` int unsigned UNIQUE not null auto_increment,
     `date` timestamp not null,
     `img_path` varchar(150) not null,
-    `tittle` varchar(100) not null,
-    `content` mediumtext not null,
+    `title` varchar(100) not null,
+    `content` LongText not null,
     `view_count` int unsigned not null default 0,
     primary key (`announcement_id`)
 );
