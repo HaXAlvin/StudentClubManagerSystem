@@ -15,7 +15,7 @@ $(document).ready(function() {
             dataType: "json",
             success: function(res) { //連到伺服器
                 console.log(res['login']);
-                console.log(res['next'])
+                console.log(res['next']);
                 if (res['login'] == true) {
                     $(location). attr('href',res['next']);
                 }

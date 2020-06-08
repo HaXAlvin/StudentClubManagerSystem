@@ -14,7 +14,7 @@ $(document).ready(function () {
       </div>
       <div class="col-sm-10">
         <div class="row">
-          <h4>{tittle}</h4>
+          <h4>{title}</h4>
 
         </div>
         <div class="row annousement-context">
@@ -48,7 +48,7 @@ $(document).ready(function () {
         let newanno = anno;
         newanno = newanno.replace("{src}", res["src"][i]);
         newanno = newanno.replace("{alt}", res["alt"][i]);
-        newanno = newanno.replace("{tittle}", res["tittle"][i]);
+        newanno = newanno.replace("{title}", res["title"][i]);
         newanno = newanno.replace("{content}", res["content"][i]);
         newanno = newanno.replace("{date}", res["date"][i]);
         newanno = newanno.replace("{view}", res["view"][i]);

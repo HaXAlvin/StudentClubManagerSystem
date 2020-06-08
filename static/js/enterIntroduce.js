@@ -11,22 +11,27 @@ $(document).ready(function () {
     male = 0;
   });
   $('#btn_send').click(function () {
-    email = $('input[name="email"]').val()
-    psw_old = $('input[name="password_old"]').val()
-    psw_new_one = $('input[name="password_new_one"]').val()
-    psw_new_two = $('input[name="password_new_two"]').val()
-    date = $('input[name="date"]').val()
-    // console.log(password_new_one)
+    email = $('input[name="email"]').val();
+    psw_old = $('input[name="password_old"]').val();
+    psw_new_one = $('input[name="password_new_one"]').val();
+    psw_new_two = $('input[name="password_new_two"]').val();
+    date = $('input[name="date"]').val();
+    // console.log(password_new_one);
     if (psw_new_one!=psw_new_two||!psw_old||!psw_new_one||!psw_new_two||!email||!date){
       return;
     }
-    jQuery.ajax({ //post form資料 抓取json檔案
+    console.log(email);
+    console.log(psw_old);
+    console.log(psw_new_two);
+    console.log(psw_new_one);
+    console.log(date);
+    $.ajax({
       type:"POST",
-      url: '/enterIntroduce',
+      url: '/updateIntroduce',
       data:JSON.stringify({'email':email,'psw_old':psw_old, 'psw_new':psw_new_one,'date':date,'male':male}),
       contentType: "application/json; charset=utf-8",
       dataType: "json",
-      success: function(res) { //連到伺服器
+      success: function(res) {
         console.log(123);
       }
     });
