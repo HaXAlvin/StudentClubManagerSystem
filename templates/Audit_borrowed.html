@@ -2,14 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>announcement</title>
+    <meta
+      name="description"
+      content="逢甲大學 iOS Club 為台灣第一個與蘋果合作之社團，希望能透過逢甲 RTC 區域教育培訓中心，讓本社團之學生能夠充分利用學校資源，培養程式設計的基本能力與邏輯觀念。本社團將會規劃許多程式開發課程，從基本的邏輯觀念，到讓同學自行創意發想 App。希冀100%的社員都對 App 有基礎概念，並能熟練程式設計，甚至精熟這項領域。"
+    />
+    <title>設備借用審核</title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-    <script src="../static/js/jquery-3.5.0.min.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
       integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
@@ -20,65 +28,11 @@
       integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
       crossorigin="anonymous"
     ></script>
-    <script>
-      $(document).ready(function () {
-        let anno = `
-          <div class="row">
-            <div class="col-2" style="text-align: center;">
-              <img
-                src="data:image/png;base64,{src}"
-                alt="{alt}"
-                style="width: 70px;"
-              />
-            </div>
-            <div class="col-sm-10">
-              <div class="row">
-                <h4>{title}</h4>
-
-              </div>
-              <div class="row annousement-context context-box">
-                <p class="overflowed">{content}</p>
-              </div>
-              <div class="row time-height">
-                <div class="col-sm-4"></div>
-                <div class="col-sm-4 down-line">
-                  <p>日期 &nbsp {date}</p>
-                </div>
-                <div class="col-sm-4">
-                  <p class="click-percent">
-                    點擊率 &nbsp {view}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <hr class="gradient" />`;
-        $.ajax({
-          type: "POST",
-          url: "/announcement_data",
-          contentType: "application/json; charset=utf-8",
-          dataType: "json",
-          success: function (res) {
-            if (res === null) {
-              return;
-            }
-            let i;
-            for (i = 0; i < res["len"]; i++) {
-              let newanno = anno;
-              newanno = newanno.replace("{src}", res["src"][i]);
-              newanno = newanno.replace("{alt}", res["alt"][i]);
-              newanno = newanno.replace("{title}", res["title"][i]);
-              newanno = newanno.replace("{content}", res["content"][i]);
-              newanno = newanno.replace("{date}", res["date"][i]);
-              newanno = newanno.replace("{view}", res["view"][i]);
-              $("#annos").append(newanno);
-            }
-          },
-        });
-      });
-    </script>
+    <link rel="stylesheet" href="../static/css/button-style.css" />
+    <link rel="stylesheet" href="../static/css/Audit-DayOff.css" />
   </head>
   <body>
+    <!-- <h1>{{account}}'s home</h1> -->
     <header>
       <div class="container logo">
         <nav
@@ -156,12 +110,16 @@
           class="navbar navbar-expand-lg navbar-light bg-light auto-hide-header"
         >
           <img
-            class="img-head"
             src="../static/img/icon_head.png"
             alt="iOSClub_icon"
+            style="width: 3%;"
           />
-          <a class="navbar-brand" href="#">iOS Club</a>
-
+          <a
+            class="navbar-brand"
+            href="#"
+            style="padding-left: 10px; margin-left: 12px;"
+            >iOS Club</a
+          >
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item">
@@ -227,23 +185,58 @@
       </div>
     </header>
     <div class="container">
-      <div class="row" style="height: max-content;">
-        <div class="col-12">
-          <div class="main-function">
-            <div
-              class="eachAnnucement"
-              style="padding-left: 15px; padding-right: 15px; height: 120px;"
-            >
-              <hr class="gradient" />
-              <div id="annos">
-                <!--                annos here-->
+      <div class="row justify-content-center">
+        <div class="col-5">
+          <hr class="gradiant" />
+          <div class="row row text-padding">
+            <h5>系級 姓名</h5>
+          </div>
+          <div class="row annousement-context row text-padding">
+            <p>請假原因</p>
+          </div>
+          <div class="row text-padding text-padding">
+            <p>日期 &nbsp</p>
+          </div>
+          <hr class="gradiant" />
+        </div>
+        <div class="col-5">
+          <hr class="gradiant" />
+          <div class="row text-padding">
+            <h5>系級 姓名</h5>
+          </div>
+          <div class="row annousement-context text-padding">
+            <p>請假原因</p>
+          </div>
+          <div class="row text-padding">
+            <p>日期 &nbsp</p>
+          </div>
+          <section id="intro">
+            <div id="intro-content" class="center-content">
+              <div class="center-content-inner">
+                <div class="content-section content-section-margin">
+                  <div class="content-section-grid clearfix">
+                    <a href="#" class="button nav-link">
+                      <div class="bottom"></div>
+
+                      <div class="top">
+                        <div class="label">好哇 &nbsp; 給你請</div>
+
+                        <div class="button-border button-border-left"></div>
+                        <div class="button-border button-border-top"></div>
+                        <div class="button-border button-border-right"></div>
+                        <div class="button-border button-border-bottom"></div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
+        <hr class="gradiant" />
       </div>
     </div>
   </body>
 </html>
 <script src="../static/js/tmp.js"></script>
-<link rel="stylesheet" type="text/css" href="../static/css/announcement.css" />
+<link rel="stylesheet" type="text/css" href="../static/css/tmp.css" />
