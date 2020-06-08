@@ -32,7 +32,7 @@ class Config:
     # db set
     DB_PORT = 3306
     DB_USER = 'root'
-    DB_PWD = 'qwer25604677'
+    DB_PWD = '0000'
     DB_NAME = 'iosclub'
     DB_CHARSET = 'utf8mb4'
     # qrcode set
@@ -127,7 +127,7 @@ def login():
         next_page = '/enterIntroduce'
     else:
         next_page = '/' if not get_next else get_next
-        res = run_sql("UPDATE memberlist SET login_count = login_count+1", (), 'update')
+        res = run_sql("UPDATE memberlist SET login_count = login_count+1 WHERE member_id = %s", (account,), 'update')
         print(res)
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
@@ -161,8 +161,9 @@ def updateIntroduce():
         return jsonify({"login": False, "msg": "Bad account or password"}), 401
     sex = 'M' if data['male'] else 'F'
     psw = psw_encrypt(data['psw_new'])
-    val = (psw, sex, data['date'], data['email'])
-    sql = "UPDATE memberlist SET password=%s,sex=%s,birth=%s,`e-mail`=%s,login_count=login_count+1"
+    val = (psw, sex, data['date'], data['email'], data['account'])
+    print(val)
+    sql = "UPDATE memberlist SET password=%s,sex=%s,birth=%s,`e-mail`=%s,login_count=login_count+1 WHERE member_nid=%s"
     res = run_sql(sql, val, 'update')
     print(res)
     if not res:
