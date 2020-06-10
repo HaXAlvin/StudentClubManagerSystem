@@ -33,7 +33,7 @@ class Config:
     # db set
     DB_PORT = 3306
     DB_USER = 'root'
-    DB_PWD = 'qwer25604677'
+    DB_PWD = '0000'
     DB_NAME = 'iosclub'
     DB_CHARSET = 'utf8mb4'
     # qrcode set
@@ -90,6 +90,7 @@ def run_sql(sql, val, types):
             if not res:
                 return None
             if types == 'update':
+                conn.commit()
                 return res
             if types == 'select':
                 description = [i[0] for i in cursor.description]
@@ -123,12 +124,11 @@ def login():
     access_token = jwt_create_token('access', account)
     refresh_token = jwt_create_token('refresh', account)
     get_next = request.json.get('next', None).replace('%2F', '/')
-    print(get_next)
     if results['res'][0][2] == 0:
         next_page = '/enterIntroduce'
     else:
         next_page = '/' if not get_next else get_next
-        res = run_sql("UPDATE memberlist SET login_count = login_count+1 WHERE member_id = %s", (account,), 'update')
+        res = run_sql("UPDATE memberlist SET login_count = login_count+1 WHERE member_nid = %s", account, 'update')
         print(res)
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
@@ -403,6 +403,11 @@ def ChangePassword():
     return render_template('ChangePassword.html')
 
 
+@app.route('/dayOff', methods=['GET'])
+def dayOff():
+    return render_template('dayOff.html')
+
+
 def clean_record():  # clean qrcode list every specific time
     now_time = datetime.now()
     print(f"**Start Clean at {now_time}**")
@@ -417,6 +422,10 @@ def clean_record():  # clean qrcode list every specific time
 @app.route('/account_check', methods=['GET'])  # check if
 def account_check():
     token = request.cookies.get('access_token_cookie', None)
+    # try:
+    #     jwt.decode('JWT_STRING', 'secret', algorithms=['HS256'])
+    # except jwt.ExpiredSignatureError:
+    # # Signature has expired
     if not token:
         return jsonify({'login': False, 'manager': False})
     key = app.config.get('JWT_SECRET_KEY')
