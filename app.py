@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 from os import path
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, url_for, redirect
-import flask_jwt_extended as jwt
+import flask_jwt_extended as f_jwt
 from flask_apscheduler import APScheduler
 import pyqrcode
 from hashlib import sha256, sha512
@@ -14,6 +14,7 @@ from random import choice
 from string import ascii_letters
 from time import sleep
 from io import BytesIO
+import jwt
 
 
 class Config:
@@ -54,7 +55,7 @@ class Config:
 
 app = Flask(__name__)
 app.config.from_object(Config())  # get setting
-jwtAPP = jwt.JWTManager(app)
+jwtAPP = f_jwt.JWTManager(app)
 punch_record = []
 img_path = path.dirname(path.abspath(__file__)) + '/static/img'
 logos = [Image.open(img_path + f'/icon/icon0{i}.png') for i in range(1, 5)]
@@ -76,7 +77,7 @@ while True:
 
 
 def jwt_create_token(types, account):
-    method = {'access': jwt.create_access_token, 'refresh': jwt.create_refresh_token}
+    method = {'access': f_jwt.create_access_token, 'refresh': f_jwt.create_refresh_token}
     return method[types](identity={'account': account}, headers={"typ": "JWT", "alg": "HS256"})
 
 
@@ -131,8 +132,8 @@ def login():
         print(res)
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
-    jwt.set_access_cookies(resp, access_token)
-    jwt.set_refresh_cookies(resp, refresh_token)
+    f_jwt.set_access_cookies(resp, access_token)
+    f_jwt.set_refresh_cookies(resp, refresh_token)
     return resp
 
 
@@ -143,9 +144,9 @@ def index():
 
 
 @app.route('/enterIntroduce', methods=['GET'])
-@jwt.jwt_optional
+@f_jwt.jwt_optional
 def enterIntroduce():
-    identity = jwt.get_jwt_identity()
+    identity = f_jwt.get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='/enterIntroduce'))
     return render_template('enterIntroduce.html', account=identity['account'])
@@ -168,7 +169,7 @@ def updateIntroduce():
     print(res)
     if not res:
         res = jsonify({'login': True, 'update': True})
-        jwt.unset_jwt_cookies(res)
+        f_jwt.unset_jwt_cookies(res)
         return res
     return jsonify({'login': True, 'update': False})
 
@@ -176,7 +177,7 @@ def updateIntroduce():
 @jwtAPP.expired_token_loader  # 逾期func
 def my_expired():
     resp = redirect(url_for('login', next=request.path))
-    jwt.unset_jwt_cookies(resp)
+    f_jwt.unset_jwt_cookies(resp)
     return resp, 302
 
 
@@ -222,9 +223,9 @@ def query():
 
 
 @app.route('/search', methods=['GET'])
-@jwt.jwt_optional
+@f_jwt.jwt_optional
 def search():
-    identity = jwt.get_jwt_identity()
+    identity = f_jwt.get_jwt_identity()
     print('search identity:', identity)
     if identity is None:
         redirect(url_for('login', next='/search'))
@@ -236,26 +237,32 @@ def search():
 #     return render_template('sign_up.html')
 
 
+def manager_check(account):
+    sql = 'SELECT member_nid, manager FROM memberlist where member_nid = %s;'
+    results = run_sql(sql, account, 'select')
+    if not results:
+        return None  # error nid
+    return False if results['res'][0][1] == 0 else True
+
+
 @app.route('/create_qrcode', methods=['GET'])
-@jwt.jwt_optional
+@f_jwt.jwt_optional
 def create_qrcode():
-    identity = jwt.get_jwt_identity()
+    identity = f_jwt.get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='create_qrcode'))
-    sql = 'SELECT member_nid, manager FROM memberlist where member_nid = %s;'
-    results = run_sql(sql, identity['account'], 'select')
-    if results is None:
-        return 'error'
-    accept = False if results['res'][0][1] == 0 else True
+    accept = manager_check(identity['account'])
+    if accept is None:
+        res = redirect(url_for('login', next='create_qrcode'))
+        f_jwt.unset_jwt_cookies(res)
+        return res
     if accept is False:
         return redirect(url_for('index'))
-    code = ''.join(choice(ascii_letters)
-                   for _ in range(app.config.get('QRCODE_LEN')))
+    code = ''.join(choice(ascii_letters) for _ in range(app.config.get('QRCODE_LEN')))
     record = {'code': code, 'expired': datetime.now() + app.config.get('QRCODE_EXPIRED')}
     punch_record.append(record)
     url = f'/punch_in/{code}'
-    qrcode = pyqrcode.create(
-        f'{app.config.get("HOST")}:{app.config.get("PORT")}{url}', error='H')
+    qrcode = pyqrcode.create(f'{app.config.get("HOST")}:{app.config.get("PORT")}{url}', error='H')
     qrcode.png(img_path + '/qrcode.png', scale=14)  # 33*14
     img = Image.open(img_path + '/qrcode.png')
     img = img.convert("RGBA")
@@ -273,9 +280,9 @@ def create_qrcode():
 
 
 @app.route('/punch_in/<code>')
-@jwt.jwt_optional
+@f_jwt.jwt_optional
 def punch_in(code):
-    identity = jwt.get_jwt_identity()
+    identity = f_jwt.get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='/punch_in/' + code))
     for record in punch_record:
@@ -310,10 +317,10 @@ def punch_in_sql(account):
 
 
 @app.route('/punch_list', methods=['GET'])  # 個人出席
-@jwt.jwt_optional
+@f_jwt.jwt_optional
 def punch_list():
     conn.ping(reconnect=True)
-    identity = jwt.get_jwt_identity()
+    identity = f_jwt.get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='/punch_list'))
     sql = "SELECT date FROM class_state WHERE member_id = (SELECT member_id FROM memberlist WHERE member_nid = %s);"
@@ -331,28 +338,6 @@ def punch_list():
 
 @app.route('/announcement', methods=['GET'])  # 公告
 def announcement():
-    # sql = 'SELECT * FROM announcement;'
-    # res = run_sql_select(sql, ())
-    # df = DataFrame(res['res'], columns=res['des'])
-    # soup = BeautifulSoup(df.to_html(), 'html.parser')
-    # # print(soup)
-    # td_list = soup.find('tbody').find_all('td')
-    # for i in range(2, len(td_list), 6):
-    #     img = Image.open(img_path + f'/announcement/{td_list[i].contents[0]}.png')
-    #     img = img.resize((100, 100), Image.BILINEAR)
-    #     buffered = BytesIO()
-    #     img.save(buffered, format="PNG")
-    #     img_str = b64encode(buffered.getvalue()).decode()
-    #     # td_list[i].contents[0] = img_str
-    #     new_tag = soup.new_tag("img")
-    #     new_tag['src'] = f"data:image/png;base64,{img_str}"
-    #     # tag = f'<img src="data:image/png;base64,{img_str}">'
-    #     td_list[i].string.replace_with(new_tag)
-    #     print(str(td_list[i].contents[0]), type(td_list[i].contents[0]))
-    # # print(soup.find('tbody').find_all('td'))
-    # soup = soup.prettify()
-    # print(soup)
-    # return soup
     return render_template('announcement.html')
 
 
@@ -361,8 +346,7 @@ def announcement_data():
     res = run_sql('SELECT * FROM announcement;', (), 'select')
     if res is None:
         return jsonify(None)
-    data = {'len': len(res['res']), 'src': [], 'alt': [],
-            'title': [], 'content': [], 'view': [], 'date': []}
+    data = {'len': len(res['res']), 'src': [], 'alt': [], 'title': [], 'content': [], 'view': [], 'date': []}
     for i in res['res']:
         data['date'].append(i[1].strftime("%Y/%m/%d %H:%M:%S"))
         data['alt'].append(i[2])
@@ -370,10 +354,9 @@ def announcement_data():
         data['content'].append(i[4])
         data['view'].append(i[5])
         buffered = BytesIO()
-        (Image.open(img_path +
-                    f'/announcement/{i[2]}.png')).save(buffered, format="PNG")
+        (Image.open(img_path + f'/announcement/{i[2]}.png')).save(buffered, format="PNG")
         data['src'].append(b64encode(buffered.getvalue()).decode())
-    print(data)
+    # print(data)
     return jsonify(data)
 
 
@@ -429,6 +412,17 @@ def clean_record():  # clean qrcode list every specific time
             punch_record.remove(records)
     now_time = datetime.now()
     print(f"**Ended Clean at {now_time}**")
+
+
+@app.route('/account_check', methods=['GET'])  # check if
+def account_check():
+    token = request.cookies.get('access_token_cookie', None)
+    if not token:
+        return jsonify({'login': False, 'manager': False})
+    key = app.config.get('JWT_SECRET_KEY')
+    jwt_info = jwt.decode(token, key, algorithms=['HS256'], verify=False)
+    print(jwt_info['identity']['account'])
+    return jsonify({'manager': manager_check(jwt_info['identity']['account']), 'login': True})
 
 
 if __name__ == '__main__':

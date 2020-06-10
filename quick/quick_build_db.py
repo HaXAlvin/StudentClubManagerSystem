@@ -34,6 +34,7 @@ conn = pymysql.connect(
 )
 cursor = conn.cursor()
 
+dropTable("day_off")
 dropTable("class_state")
 dropTable("rtc_state")
 dropTable("memberlist")

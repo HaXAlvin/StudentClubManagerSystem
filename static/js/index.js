@@ -5,6 +5,20 @@ var navClass = $(".logo_nav");
 $(document).ready(function () {
   navClass.removeClass("hideUp");
   bodyClass.addClass("hideUp");
+  $.get("/account_check", function( data ) {
+    console.log(data);
+    console.log(data.login);
+    if(!data.login) {
+      console.log(123);
+      $("#member_dropdown").hide();
+    }
+    if(!data.login||!data.manager){
+      $("#manager_dropdown").hide();
+    }
+    // $( "body" )
+    //   .append( "Name: " + data.name ) // John
+    //   .append( "Time: " + data.time ); //  2pm
+  }, "json" );
 });
 
 // var bodyClass = document.body.classList,
