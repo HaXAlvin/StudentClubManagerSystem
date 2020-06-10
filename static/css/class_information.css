@@ -1,0 +1,9 @@
+.outer-center {
+  /* background-color: #95afba; */
+}
+.inner-center {
+  /* background-color: #d5e1a3; */
+  display: flex; /* ★ */
+  height: 300px;
+  align-items: center; /* ★ */
+}

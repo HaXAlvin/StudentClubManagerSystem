@@ -6,7 +6,7 @@
       name="description"
       content="逢甲大學 iOS Club 為台灣第一個與蘋果合作之社團，希望能透過逢甲 RTC 區域教育培訓中心，讓本社團之學生能夠充分利用學校資源，培養程式設計的基本能力與邏輯觀念。本社團將會規劃許多程式開發課程，從基本的邏輯觀念，到讓同學自行創意發想 App。希冀100%的社員都對 App 有基礎概念，並能熟練程式設計，甚至精熟這項領域。"
     />
-    <title>dayOff</title>
+    <title>社課資訊</title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
@@ -28,7 +28,7 @@
       integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
       crossorigin="anonymous"
     ></script>
-    <link rel="stylesheet" href="../static/css/button-style.css" />
+    <link rel="stylesheet" href="../static/css/class_information.css">
   </head>
   <body>
     <!-- <h1>{{account}}'s home</h1> -->
@@ -57,7 +57,91 @@
                 <a href="announcement.html" class="nav-link">社團公告</a>
               </li>
               <li class="nav-item">
-                <a href="../templates/active_information.html" class="nav-link"
+                <a href="#" class="nav-link">活動資訊</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  社員專屬
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="../templates/dayOff.html"
+                    >請假</a
+                  >
+                  <a class="dropdown-item" href="#">社課資源</a>
+                  <a
+                    class="dropdown-item"
+                    href="../templates/device_borrowed.html"
+                    >設備借用</a
+                  >
+                </div>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  幹部專屬
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="../templates/Audit_DayOff.html"
+                    >請假審核</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/Audit_borrowed.html"
+                    >設備借用審核</a
+                  >
+                  <a class="dropdown-item" href="#">上傳社課資源</a>
+                  <a class="dropdown-item" href="#">出席率報表</a>
+                  <a class="dropdown-item" href="#">設備現況更新</a>
+                  <a class="dropdown-item" href="#">社課錄影</a>
+                  <!-- 以上為幹部功能 -->
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <div class="container">
+        <nav
+          class="navbar navbar-expand-lg navbar-light bg-light auto-hide-header"
+        >
+          <img
+            src="../static/img/icon_head.png"
+            alt="iOSClub_icon"
+            style="width: 3%;"
+          />
+          <a
+            class="navbar-brand"
+            href="#"
+            style="padding-left: 10px; margin-left: 12px;"
+            >iOS Club</a
+          >
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="../templates/class_information.html"
+                  >社課資訊</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../templates/announcement.html"
+                  >社團公告</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../templates/active_information.html"
                   >活動資訊</a
                 >
               </li>
@@ -96,76 +180,14 @@
                   幹部專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="#">請假審核</a>
-                  <a class="dropdown-item" href="#">設備借用審核</a>
-                  <a class="dropdown-item" href="#">上傳社課資源</a>
-                  <a class="dropdown-item" href="#">出席率報表</a>
-                  <a class="dropdown-item" href="#">設備現況更新</a>
-                  <a class="dropdown-item" href="#">社課錄影</a>
-                  <!-- 以上為幹部功能 -->
-                </div>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-      <div class="container">
-        <nav
-          class="navbar navbar-expand-lg navbar-light bg-light auto-hide-header"
-        >
-          <img
-            src="../static/img/icon_head.png"
-            alt="iOSClub_icon"
-            style="width: 3%;"
-          />
-          <a
-            class="navbar-brand"
-            href="#"
-            style="padding-left: 10px; margin-left: 12px;"
-            >iOS Club</a
-          >
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-              <li class="nav-item">
-                <a class="nav-link" href="#">社課資訊</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">社團公告</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">活動資訊</a>
-              </li>
-              <li class="nav-item dropdown">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  社員專屬
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="#">請假</a>
-                  <a class="dropdown-item" href="#">社課資源</a>
-                  <a class="dropdown-item" href="#">設備借用</a>
-                </div>
-              </li>
-              <li class="nav-item dropdown">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  幹部專屬
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="#">請假審核</a>
-                  <a class="dropdown-item" href="#">設備借用審核</a>
+                  <a class="dropdown-item" href="../templates/Audit_DayOff.html"
+                    >請假審核</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/Audit_borrowed.html"
+                    >設備借用審核</a
+                  >
                   <a class="dropdown-item" href="#">上傳社課資源</a>
                   <a class="dropdown-item" href="#">出席率報表</a>
                   <a class="dropdown-item" href="#">設備現況更新</a>
@@ -184,50 +206,114 @@
       </div>
     </header>
     <div class="container">
-      <div class="container" style="height: 35px;"></div>
-      <form action="" id="form-context" style="text-align: center;">
-        <p class="justify-content-end">
-          請假日期：
-          <input type="date" />
-        </p>
-        <p>
-          假別：
-          <select name="請假" id="day-off">
-            <option value="personal-leave">事假</option>
-            <option value="sick-leave">病假</option>
-            <option value="menstrual-leave">生理假</option>
-          </select>
-        </p>
-        <p>
-          請假原因：
-          <textarea name="textarea" rows="3" cols="30" style="font-size: 16px;">
-          </textarea>
-        </p>
-      </form>
-      <section id="intro">
-        <div id="intro-content" class="center-content">
-          <div class="center-content-inner">
-            <div class="content-section content-section-margin">
-              <div class="content-section-grid clearfix">
-                <a href="#" class="button nav-link">
-                  <div class="bottom"></div>
-
-                  <div class="top">
-                    <div class="label">我要請假</div>
-
-                    <div class="button-border button-border-left"></div>
-                    <div class="button-border button-border-top"></div>
-                    <div class="button-border button-border-right"></div>
-                    <div class="button-border button-border-bottom"></div>
+      <div class="content">
+        <div class="row">
+          <div class="col-1"></div>
+          <div class="col-3 mx-auto deep context-border outer-center">
+            <h5>
+              逢甲RTC蘋果教育訓練中心
+            </h5>
+            <div class="inner-center">
+              <p>
+                全國唯一獲Apple認證　逢甲大學Apple區域教育培訓中心
+              </p>
+            </div>
+          </div>
+          <div class="col-7 mx-auto deep">
+            <div class="row">
+              <div class="col-8 mx-auto">
+                <div
+                  id="carouselExampleFade"
+                  class="carousel slide carousel-fade image-center"
+                  data-ride="carousel"
+                >
+                  <div class="carousel-inner">
+                    <div class="carousel-item active image">
+                      <img
+                        src="../static/img/RTC/RTC00.jpg"
+                        class="d-block w-100"
+                        alt="#00"
+                      />
+                    </div>
+                    <div class="carousel-item image">
+                      <img
+                        src="../static/img/RTC/RTC01.jpg"
+                        class="d-block w-100"
+                        alt="#01"
+                      />
+                    </div>
+                    <div class="carousel-item image">
+                      <img
+                        src="../static/img/RTC/RTC02.jpg"
+                        class="d-block w-100"
+                        alt="#02"
+                      />
+                    </div>
+                    <div class="carousel-item image">
+                      <img
+                        src="../static/img/RTC/RTC03.jpg"
+                        class="d-block w-100"
+                        alt="#03"
+                      />
+                    </div>
+                    <div class="carousel-item image">
+                      <img
+                        src="../static/img/RTC/RTC04.jpg"
+                        class="d-block w-100"
+                        alt="#04"
+                      />
+                    </div>
                   </div>
-                </a>
+                  <a
+                    class="carousel-control-prev"
+                    href="#carouselExampleFade"
+                    role="button"
+                    data-slide="prev"
+                  >
+                    <span
+                      class="carousel-control-prev-icon"
+                      aria-hidden="true"
+                    ></span>
+                    <span class="sr-only">Previous</span>
+                  </a>
+                  <a
+                    class="carousel-control-next"
+                    href="#carouselExampleFade"
+                    role="button"
+                    data-slide="next"
+                  >
+                    <span
+                      class="carousel-control-next-icon"
+                      aria-hidden="true"
+                    ></span>
+                    <span class="sr-only">Next</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
+          <div class="col-1"></div>
         </div>
-      </section>
+      <div class="row">
+        <div class="col-2"></div>
+        <div class="col-4">
+          
+              <p>
+                基礎課程 週一 晚上 6:30 RTC教室
+              </p>
+           
+              
+            
+        </div>
+        <div class="col-4">
+          <p>
+            進階課程 週四 晚上 6:30 RTC教室
+          </p>
+        </div>
+        <div class="col-2"></div>
+      </div>
     </div>
   </body>
 </html>
-<script src="../static/js/dayOff.js"></script>
-<link rel="stylesheet" type="text/css" href="../static/css/dayOff.css" />
+<script src="../static/js/tmp.js"></script>
+<link rel="stylesheet" type="text/css" href="../static/css/tmp.css" />

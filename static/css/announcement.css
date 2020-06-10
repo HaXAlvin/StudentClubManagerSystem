@@ -94,3 +94,6 @@
   -webkit-line-clamp: 2;
   text-overflow: ellipsis;
 }
+.deep {
+  z-index: -100;
+}

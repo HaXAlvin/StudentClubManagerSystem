@@ -4,7 +4,7 @@ var bodyClass = $(".auto-hide-header"),
 $(document).ready(function () {
   bodyClass.addClass("hideUp");
   let anno = `
-    <div class="row">
+    <div class="row deep">
       <div class="col-2" style="text-align: center;">
         <img
           src="data:image/png;base64,{src}"
@@ -50,7 +50,7 @@ $(document).ready(function () {
         newanno = newanno.replace("{alt}", res["alt"][i]);
         newanno = newanno.replace("{title}", res["title"][i]);
         newanno = newanno.replace("{content}", res["content"][i]);
-        newanno = newanno.replace(/\\n/g,"");
+        newanno = newanno.replace(/\\n/g, "");
         newanno = newanno.replace("{date}", res["date"][i]);
         newanno = newanno.replace("{view}", res["view"][i]);
         $("#annos").append(newanno);
