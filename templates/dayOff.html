@@ -13,11 +13,11 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-<!--    <script-->
-<!--      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"-->
-<!--      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"-->
-<!--      crossorigin="anonymous"-->
-<!--    ></script>-->
+    <!--    <script-->
+    <!--      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"-->
+    <!--      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"-->
+    <!--      crossorigin="anonymous"-->
+    <!--    ></script>-->
     <script src="../static/js/jquery-3.5.1.js"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
@@ -77,7 +77,11 @@
                   <a class="dropdown-item" href="../templates/dayOff.html"
                     >請假</a
                   >
-                  <a class="dropdown-item" href="#">社課資源</a>
+                  <a
+                    class="dropdown-item"
+                    href="../templates/class_resource.html"
+                    >社課資源</a
+                  >
                   <a
                     class="dropdown-item"
                     href="../templates/device_borrowed.html"
@@ -97,12 +101,24 @@
                   幹部專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="#">請假審核</a>
-                  <a class="dropdown-item" href="#">設備借用審核</a>
-                  <a class="dropdown-item" href="#">上傳社課資源</a>
+                  <a class="dropdown-item" href="../templates/Audit_DayOff.html"
+                    >請假審核</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/Audit_borrowed.html"
+                    >設備借用審核</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/update_class_resource.html"
+                    >上傳社課資源</a
+                  >
                   <a class="dropdown-item" href="#">出席率報表</a>
                   <a class="dropdown-item" href="#">設備現況更新</a>
-                  <a class="dropdown-item" href="#">社課錄影</a>
+                  <a class="dropdown-item" href="../templates/class_vedio.html"
+                    >社課錄影</a
+                  >
                   <!-- 以上為幹部功能 -->
                 </div>
               </li>
@@ -128,13 +144,17 @@
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item">
-                <a class="nav-link" href="#">社課資訊</a>
+                <a class="nav-link" href="../templates/class_information.html"
+                  >社課資訊</a
+                >
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">社團公告</a>
+                <a class="nav-link" href="announcement.html">社團公告</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">活動資訊</a>
+                <a class="nav-link" href="../templates/active_information.html"
+                  >活動資訊</a
+                >
               </li>
               <li class="nav-item dropdown">
                 <a
@@ -148,9 +168,19 @@
                   社員專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="#">請假</a>
-                  <a class="dropdown-item" href="#">社課資源</a>
-                  <a class="dropdown-item" href="#">設備借用</a>
+                  <a class="dropdown-item" href="../templates/dayOff.html"
+                    >請假</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/class_resource.html"
+                    >社課資源</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/device_borrowed.html"
+                    >設備借用</a
+                  >
                 </div>
               </li>
               <li class="nav-item dropdown">
@@ -165,12 +195,24 @@
                   幹部專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="#">請假審核</a>
-                  <a class="dropdown-item" href="#">設備借用審核</a>
-                  <a class="dropdown-item" href="#">上傳社課資源</a>
+                  <a class="dropdown-item" href="../templates/Audit_DayOff.html"
+                    >請假審核</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/Audit_borrowed.html"
+                    >設備借用審核</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/update_class_resource.html"
+                    >上傳社課資源</a
+                  >
                   <a class="dropdown-item" href="#">出席率報表</a>
                   <a class="dropdown-item" href="#">設備現況更新</a>
-                  <a class="dropdown-item" href="#">社課錄影</a>
+                  <a class="dropdown-item" href="../templates/class_vedio.html"
+                    >社課錄影</a
+                  >
                   <!-- 以上為幹部功能 -->
                 </div>
               </li>
@@ -201,10 +243,16 @@
         </p>
         <p>
           請假原因：
-          <textarea id="input_reason" name="textarea" rows="3" cols="30" style="font-size: 16px;">
+          <textarea
+            id="input_reason"
+            name="textarea"
+            rows="3"
+            cols="30"
+            style="font-size: 16px;"
+          >
           </textarea>
         </p>
-        <input id="input_account" type="hidden" value="{{account}}"/>
+        <input id="input_account" type="hidden" value="{{account}}" />
       </form>
       <section id="intro">
         <div id="intro-content" class="center-content">
