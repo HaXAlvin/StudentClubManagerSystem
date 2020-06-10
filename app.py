@@ -404,8 +404,18 @@ def ChangePassword():
 
 
 @app.route('/dayOff', methods=['GET'])
+@f_jwt.jwt_optional
 def dayOff():
-    return render_template('dayOff.html')
+    identity = f_jwt.get_jwt_identity()
+    return render_template('dayOff.html', account=identity['account'])
+
+
+@app.route('/send_dayOff', methods=['POST'])
+def send_dayOff():
+    req = request.json
+    print(req)
+    # sql here!!
+    return jsonify({'msg':'success'})
 
 
 def clean_record():  # clean qrcode list every specific time

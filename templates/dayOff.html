@@ -13,11 +13,12 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-    <script
-      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-      crossorigin="anonymous"
-    ></script>
+<!--    <script-->
+<!--      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"-->
+<!--      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"-->
+<!--      crossorigin="anonymous"-->
+<!--    ></script>-->
+    <script src="../static/js/jquery-3.5.1.js"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
       integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
@@ -188,7 +189,7 @@
       <form action="" id="form-context" style="text-align: center;">
         <p class="justify-content-end">
           請假日期：
-          <input type="date" />
+          <input id="input_date" type="date" />
         </p>
         <p>
           假別：
@@ -200,16 +201,17 @@
         </p>
         <p>
           請假原因：
-          <textarea name="textarea" rows="3" cols="30" style="font-size: 16px;">
+          <textarea id="input_reason" name="textarea" rows="3" cols="30" style="font-size: 16px;">
           </textarea>
         </p>
+        <input id="input_account" type="hidden" value="{{account}}"/>
       </form>
       <section id="intro">
         <div id="intro-content" class="center-content">
           <div class="center-content-inner">
             <div class="content-section content-section-margin">
               <div class="content-section-grid clearfix">
-                <a href="#" class="button nav-link">
+                <a id="btn_dayOff" href="#" class="button nav-link">
                   <div class="bottom"></div>
 
                   <div class="top">
