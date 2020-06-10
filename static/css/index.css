@@ -34,3 +34,26 @@
 .logo {
   text-align: center;
 }
+
+.deep {
+  z-index: -100;
+}
+
+/* .image {
+  width: 60%;
+} */
+
+.col-7 {
+  text-align: center;
+}
+.col-3 {
+  text-align: center;
+}
+
+.carousel-inner {
+  margin-right: 0;
+}
+
+.image-center {
+  text-align: center;
+}

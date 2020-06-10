@@ -24,10 +24,9 @@
       integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
       crossorigin="anonymous"
     ></script>
-    <link rel="stylesheet" href="../static/css/2in1.css">
+    <link rel="stylesheet" href="../static/css/2in1.css" />
     <link rel="stylesheet" href="../static/css/inputDesign.css" />
     <link rel="stylesheet" href="../static/css/button-style.css" />
-
   </head>
   <body>
     <div class="container logo">
@@ -47,71 +46,88 @@
       <form action="" class="new_form">
         <form>
           <div class="radiobtn">
-            <input type="radio" id="huey"
-                   name="drone" value="huey" checked />
+            <input type="radio" id="huey" name="drone" value="huey" checked />
             <label for="huey">Male</label>
           </div>
 
           <div class="radiobtn">
-            <input type="radio" id="dewey"
-                   name="drone" value="dewey" />
+            <input type="radio" id="dewey" name="drone" value="dewey" />
             <label for="dewey">Female</label>
           </div>
-
         </form>
         <div class="between_2in1"></div>
-        <div class="form__group field">
-          <input
-            type="date"
-            class="form__field"
-            placeholder="Name"
-            name="date"
-            required
-          />
-          <label class="form__label">生日</label>
+        <div class="row">
+          <div class="col-8 mx-auto">
+            <div class="form__group field">
+              <input
+                type="date"
+                class="form__field"
+                placeholder="Name"
+                name="date"
+                required
+              />
+              <label class="form__label">生日</label>
+            </div>
+          </div>
         </div>
-        <div class="form__group field">
-          <input
-            type="email"
-            pattern="[a-zA-Z0-9]+@[a-zA-Z0-9._]+"
-            class="form__field"
-            placeholder="email"
-            name="email"
-            required
-          />
-          <label class="form__label">Email</label>
+        <div class="row">
+          <div class="col-8 mx-auto">
+            <div class="form__group field">
+              <input
+                type="email"
+                pattern="[a-zA-Z0-9]+@[a-zA-Z0-9._]+"
+                class="form__field"
+                placeholder="email"
+                name="email"
+                required
+              />
+              <label class="form__label">Email</label>
+            </div>
+          </div>
         </div>
-        <div class="form__group field">
-          <input
-            type="password"
-            class="form__field"
-            placeholder="Name"
-            name="password_old"
-            required
-          />
-          <label class="form__label">舊密碼</label>
+        <div class="row">
+          <div class="col-8 mx-auto">
+            <div class="form__group field">
+              <input
+                type="password"
+                class="form__field"
+                placeholder="Name"
+                name="password_old"
+                required
+              />
+              <label class="form__label">舊密碼</label>
+            </div>
+          </div>
         </div>
-        <div class="form__group field">
-          <input
-            type="password"
-            class="form__field"
-            placeholder="Name"
-            name="password_new_one"
-            required
-          />
-          <label class="form__label">新密碼</label>
+        <div class="row">
+          <div class="col-8 mx-auto">
+            <div class="form__group field">
+              <input
+                type="password"
+                class="form__field"
+                placeholder="Name"
+                name="password_new_one"
+                required
+              />
+              <label class="form__label">新密碼</label>
+            </div>
+          </div>
         </div>
-        <div class="form__group field">
-          <input
-            type="password"
-            class="form__field"
-            placeholder="Name"
-            name="password_new_two"
-            required
-          />
-          <label class="form__label">再次輸入新密碼</label>
+        <div class="row">
+          <div class="col-8 mx-auto">
+            <div class="form__group field">
+              <input
+                type="password"
+                class="form__field"
+                placeholder="Name"
+                name="password_new_two"
+                required
+              />
+              <label class="form__label">再次輸入新密碼</label>
+            </div>
+          </div>
         </div>
-        <input name="account" value="{{account}}" hidden/>
+        <input name="account" value="{{account}}" hidden />
       </form>
       <section id="intro" style="margin-top: 50px;">
         <div id="intro-content" class="center-content">

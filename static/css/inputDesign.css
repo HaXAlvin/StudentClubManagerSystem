@@ -2,15 +2,15 @@
   position: relative;
   padding: 15px 0 0;
   margin-top: 10px;
-  text-align: center;
+  /* text-align: center; */
 }
 .field {
-  text-align: center;
+  /* text-align: center; */
 }
 
 .form__field {
   font-family: inherit;
-  width: 70%;
+  width: 100%;
   border: 0;
   border-bottom: 2px solid #9b9b9b;
   outline: 0;
