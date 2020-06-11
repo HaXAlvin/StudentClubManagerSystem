@@ -20,7 +20,7 @@
       integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
       crossorigin="anonymous"
     ></script>
-    <script src="../static/js/announcement.js"></script>
+    <script src="../static/js/active_information.js"></script>
   </head>
   <body>
     <header>
@@ -28,7 +28,7 @@
         <nav
           class="navbar navbar-expand-lg navbar-light navbar-collapse-center navbar-center"
         >
-          <a href="#">
+          <a href="../templates/index.html">
             <img
               src="../static/img/logo_black.png"
               alt="iOSClub"
@@ -51,86 +51,6 @@
                 <a href="../templates/active_information.html" class="nav-link"
                   >活動資訊</a
                 >
-              </li>
-              <li class="nav-item dropdown">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  社員專屬
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="../templates/dayOff.html"
-                    >請假</a
-                  >
-                  <a class="dropdown-item" href="../templates/class_resource.html">社課資源</a>
-                  <a
-                    class="dropdown-item"
-                    href="../templates/device_borrowed.html"
-                    >設備借用</a
-                  >
-                </div>
-              </li>
-              <li class="nav-item dropdown">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  幹部專屬
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="../templates/Audit_DayOff.html"
-                    >請假審核</a
-                  >
-                  <a
-                    class="dropdown-item"
-                    href="../templates/Audit_borrowed.html"
-                    >設備借用審核</a
-                  >
-                  <a class="dropdown-item" href="../templates/update_class_resource.html">上傳社課資源</a>
-                  <a class="dropdown-item" href="#">出席率報表</a>
-                  <a class="dropdown-item" href="#">設備現況更新</a>
-                  <a class="dropdown-item" href="../templates/class_vedio.html">社課錄影</a>
-                  <!-- 以上為幹部功能 -->
-                </div>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-      <div class="container">
-        <nav
-          class="navbar navbar-expand-lg navbar-light bg-light auto-hide-header"
-        >
-          <img
-            class="img-head"
-            src="../static/img/icon_head.png"
-            alt="iOSClub_icon"
-          />
-          <a class="navbar-brand" href="#">iOS Club</a>
-
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-              <li class="nav-item">
-                <a class="nav-link" href="../templates/class_information.html"
-                  >社課資訊</a
-                >
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="../templates/announcement.html"
-                  >社團公告</a
-                >
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="../templates/active_information.html">活動資訊</a>
               </li>
               <li class="nav-item dropdown">
                 <a
@@ -179,10 +99,108 @@
                     href="../templates/Audit_borrowed.html"
                     >設備借用審核</a
                   >
-                  <a class="dropdown-item" href="../templates/update_class_resource.html">上傳社課資源</a>
+                  <a
+                    class="dropdown-item"
+                    href="../templates/update_class_resource.html"
+                    >上傳社課資源</a
+                  >
                   <a class="dropdown-item" href="#">出席率報表</a>
                   <a class="dropdown-item" href="#">設備現況更新</a>
-                  <a class="dropdown-item" href="../templates/class_vedio.html">社課錄影</a>
+                  <a class="dropdown-item" href="../templates/class_vedio.html"
+                    >社課錄影</a
+                  >
+                  <!-- 以上為幹部功能 -->
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <div class="container">
+        <nav
+          class="navbar navbar-expand-lg navbar-light bg-light auto-hide-header"
+        >
+          <img
+            class="img-head"
+            src="../static/img/icon_head.png"
+            alt="iOSClub_icon"
+          />
+          <a class="navbar-brand" href="#">iOS Club</a>
+
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="../templates/class_information.html"
+                  >社課資訊</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../templates/announcement.html"
+                  >社團公告</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../templates/active_information.html"
+                  >活動資訊</a
+                >
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  社員專屬
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="../templates/dayOff.html"
+                    >請假</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/class_resource.html"
+                    >社課資源</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/device_borrowed.html"
+                    >設備借用</a
+                  >
+                </div>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  幹部專屬
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="../templates/Audit_DayOff.html"
+                    >請假審核</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/Audit_borrowed.html"
+                    >設備借用審核</a
+                  >
+                  <a
+                    class="dropdown-item"
+                    href="../templates/update_class_resource.html"
+                    >上傳社課資源</a
+                  >
+                  <a class="dropdown-item" href="#">出席率報表</a>
+                  <a class="dropdown-item" href="#">設備現況更新</a>
+                  <a class="dropdown-item" href="../templates/class_vedio.html"
+                    >社課錄影</a
+                  >
                   <!-- 以上為幹部功能 -->
                 </div>
               </li>
