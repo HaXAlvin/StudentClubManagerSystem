@@ -7,3 +7,15 @@
   height: 300px;
   align-items: center; /* ★ */
 }
+.square {
+  background-color: ivory;
+  width: 300px;
+  height: 300px;
+}
+.between-class-RTC {
+  height: 60px;
+}
+
+.deep {
+  z-index: -100;
+}

@@ -110,6 +110,11 @@
                   >
                   <a
                     class="dropdown-item"
+                    href="../templates/return_device_outer.html"
+                    >設備歸還</a
+                  >
+                  <a
+                    class="dropdown-item"
                     href="../templates/update_class_resource.html"
                     >上傳社課資源</a
                   >
@@ -202,6 +207,11 @@
                   >
                   <a
                     class="dropdown-item"
+                    href="../templates/return_device_outer.html"
+                    >設備歸還</a
+                  >
+                  <a
+                    class="dropdown-item"
                     href="../templates/update_class_resource.html"
                     >上傳社課資源</a
                   >
@@ -227,15 +237,15 @@
       <div class="container" style="height: 35px;"></div>
       <form action="" id="form-context" style="text-align: center;">
         <p class="justify-content-end">
-          借用日期（開始）：
-          <input id="input_date" type="date" />
+          借用日期（開始）&nbsp;
+          <input type="date" />
         </p>
         <p class="justify-content-end">
-          借用日期（結束）：
-          <input id="input_date" type="date" />
+          借用日期（結束） &nbsp;
+          <input type="date" />
         </p>
         <p>
-          借用設備：
+          借用設備 &nbsp;
           <select name="請假" id="day-off">
             <option value="personal-leave">iPad</option>
             <option value="sick-leave">繪圖板</option>
@@ -243,7 +253,19 @@
           </select>
         </p>
         <p>
-          借用原因：
+          借用數量 &nbsp;
+          <select name="請假">
+            <option value="personal-leave">1</option>
+            <option value="sick-leave">2</option>
+            <option value="menstrual-leave">3</option>
+          </select>
+        </p>
+        <p>
+          聯絡電話 &nbsp;
+          <input type="phone" />
+        </p>
+        <p>
+          借用原因 &nbsp;
           <textarea
             id="input_reason"
             name="textarea"
@@ -253,6 +275,7 @@
           >
           </textarea>
         </p>
+
         <input id="input_account" type="hidden" value="{{account}}" />
       </form>
       <section id="intro">
