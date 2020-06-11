@@ -7,7 +7,7 @@ $(document).ready(function () {
     let date = $('#input_date').val();
     let reason = $('#input_reason').val();
     let types = $('#day-off').val();
-    let account = $('#input_account')
+    let account = $('#input_account').val()
     console.log(date);
     console.log(reason);
     console.log(types);

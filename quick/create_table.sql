@@ -58,7 +58,7 @@ create table `day_off`(
     `day_off_id` int unsigned not null auto_increment,
     `member_id` int unsigned NOT NULL,
     `reason` LongText not null,
-    `dat_off_date` date not null,
+    `day_off_date` date not null,
     `send_time` timestamp not null,
     `day_off_type` varchar(50) CHARACTER SET utf8mb4 not null,
     `day_off_accept` tinyint not null default 0,

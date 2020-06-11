@@ -3,6 +3,17 @@ var bodyClass = $(".auto-hide-header"),
 
 $(document).ready(function () {
   bodyClass.addClass("hideUp");
+  $.get("/account_check", function( data ) {
+    console.log(data);
+    console.log(data.login);
+    if(!data.login) {
+      console.log(123);
+      $(".member_dropdown").hide();
+    }
+    if(!data.login||!data.manager){
+      $(".manager_dropdown").hide();
+    }
+  }, "json" );
   let anno = `
     <div class="row deep">
       <div class="col-2" style="text-align: center;">

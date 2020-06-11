@@ -13,11 +13,13 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-    <script
-      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-      crossorigin="anonymous"
-    ></script>
+<!--    <script-->
+<!--      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"-->
+<!--      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"-->
+<!--      crossorigin="anonymous"-->
+<!--    ></script>-->
+    <script src="../static/js/jquery-3.5.1.js"></script>
+<!--    <script src="../static/js/class_information.js"></script>-->
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
       integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
@@ -31,13 +33,12 @@
     <link rel="stylesheet" href="../static/css/class_information.css" />
   </head>
   <body>
-    <!-- <h1>{{account}}'s home</h1> -->
     <header>
       <div class="container logo">
         <nav
           class="navbar navbar-expand-lg navbar-light navbar-collapse-center navbar-center"
         >
-          <a href="../templates/index.html">
+          <a href="/">
             <img
               src="../static/img/logo_black.png"
               alt="iOSClub"
@@ -49,19 +50,19 @@
           <nav class="navbar main-nav navbar-expand-lg navbar-light">
             <ul class="navbar-nav mx-auto">
               <li class="nav-item">
-                <a href="/class_information" class="nav-link"
+                <a href="class_information" class="nav-link"
                   >社課資訊</a
                 >
               </li>
               <li class="nav-item">
-                <a href="announcement" class="nav-link">社團公告</a>
+                <a href="/announcement" class="nav-link">社團公告</a>
               </li>
               <li class="nav-item">
                 <a href="/active_information" class="nav-link"
                   >活動資訊</a
                 >
               </li>
-              <li class="nav-item dropdown">
+              <li class="nav-item dropdown member_dropdown">
                 <a
                   class="nav-link dropdown-toggle"
                   href="#"
@@ -88,7 +89,7 @@
                   >
                 </div>
               </li>
-              <li class="nav-item dropdown">
+              <li class="nav-item dropdown manager_dropdown">
                 <a
                   class="nav-link dropdown-toggle"
                   href="#"
@@ -100,7 +101,7 @@
                   幹部專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="../templates/Audit_DayOff.html"
+                  <a class="dropdown-item" href="/Audit_DayOff"
                     >請假審核</a
                   >
                   <a
@@ -162,7 +163,7 @@
                   >活動資訊</a
                 >
               </li>
-              <li class="nav-item dropdown">
+              <li class="nav-item dropdown member_dropdown">
                 <a
                   class="nav-link dropdown-toggle"
                   href="#"
@@ -189,7 +190,7 @@
                   >
                 </div>
               </li>
-              <li class="nav-item dropdown">
+              <li class="nav-item dropdown manager_dropdown">
                 <a
                   class="nav-link dropdown-toggle"
                   href="#"

@@ -33,7 +33,7 @@ class Config:
     # db set
     DB_PORT = 3306
     DB_USER = 'root'
-    DB_PWD = 'qwer25604677'
+    DB_PWD = '0000'
     DB_NAME = 'iosclub'
     DB_CHARSET = 'utf8mb4'
     # qrcode set
@@ -232,11 +232,6 @@ def search():
     return render_template('search.html')
 
 
-# @app.route('/sign_up', methods=['GET'])
-# def sign_up():
-#     return render_template('sign_up.html')
-
-
 def manager_check(account):
     sql = 'SELECT member_nid, manager FROM memberlist where member_nid = %s;'
     results = run_sql(sql, account, 'select')
@@ -275,7 +270,6 @@ def create_qrcode():
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     img_str = b64encode(buffered.getvalue()).decode()
-
     return render_template('qrcode.html', qrcode=img_str, url=url)
 
 
@@ -398,15 +392,12 @@ def attendance():
     return soup.prettify()
 
 
-@app.route('/ChangePassword', methods=['GET'])
-def ChangePassword():
-    return render_template('ChangePassword.html')
-
-
 @app.route('/dayOff', methods=['GET'])
 @f_jwt.jwt_optional
 def dayOff():
     identity = f_jwt.get_jwt_identity()
+    if identity is None:
+        return redirect(url_for('login', next='/dayOff'))
     return render_template('dayOff.html', account=identity['account'])
 
 
@@ -414,8 +405,73 @@ def dayOff():
 def send_dayOff():
     req = request.json
     print(req)
-    # sql here!!
-    return jsonify({'msg':'success'})
+    sql = "insert into day_off (member_id, reason, day_off_date, send_time, day_off_type,day_off_accept) " \
+          "values ((SELECT member_id FROM memberlist WHERE member_nid = %s),%s,%s,%s,%s,%s)"
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    val = (req['account'], req['reason'], req['date'], datetime.now().strftime("%Y-%m-%d %H:%M:%S"), req['types'], 0)
+    res = run_sql(sql, val, 'update')
+    conn.commit()
+    print(res)
+    return jsonify({'msg': 'success'})
+
+
+@app.route('/Audit_DayOff_data', methods=['POST'])
+def Audit_DayOff_data():
+    sql = 'SELECT b.member_name,b.member_department ,a.reason,a.day_off_date,a.day_off_type ' \
+          'FROM day_off as a ,memberlist as b where a.day_off_accept=0 and a.member_id=b.member_id;'
+    # day_off_sql = 'SELECT %s FROM day_off where day_off_accept = 0;'
+    res = run_sql(sql, (), 'select')
+    # print(dep)
+    if res is None:
+        return jsonify(None)
+    data = {'len': len(res['res']), 'department': [], 'name': [], 'reason': [], 'date': []}
+    for i in res['res']:
+        data['name'].append(i[0])
+        data['department'].append(i[1])
+        data['reason'].append(i[2])
+        data['date'].append(i[3].strftime("%Y/%m/%d"))
+    print(data)
+    return jsonify(data)
+
+
+@app.route('/Audit_DayOff', methods=['GET'])
+def Audit_DayOff():
+    return render_template('./Audit_DayOff.html')
+
+
+@app.route('/class_information', methods=['GET'])
+def class_information():
+    return render_template('./class_information.html')
+
+
+@app.route('/class_resource', methods=['GET'])
+def class_resource():
+    return render_template('./class_resource.html')
+
+
+@app.route('/class_vedio', methods=['GET'])
+def class_vedio():
+    return render_template('./class_vedio.html')
+
+
+@app.route('/device_borrowed', methods=['GET'])
+def device_borrowed():
+    return render_template('./device_borrowed.html')
+
+
+@app.route('/Audit_borrowed', methods=['GET'])
+def Audit_borrowed():
+    return render_template('./Audit_borrowed.html')
+
+
+@app.route('/active_information', methods=['GET'])
+def active_information():
+    return render_template('./active_information.html')
+
+
+@app.route('/update_class_resource', methods=['GET'])
+def update_class_resource():
+    return render_template('./update_class_resource.html')
 
 
 def clean_record():  # clean qrcode list every specific time

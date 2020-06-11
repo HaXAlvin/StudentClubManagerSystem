@@ -28,7 +28,7 @@ conn = pymysql.connect(
     host='127.0.0.1',
     port=3306,
     user='root',
-    passwd='qwer25604677',
+    passwd='0000',
     db='iosclub',
     charset='utf8mb4',
 )

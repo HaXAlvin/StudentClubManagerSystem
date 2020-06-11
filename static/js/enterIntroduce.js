@@ -53,14 +53,7 @@ $(document).ready(function () {
         }
       }
     });
-    // $('#huey').prop("checked",true);
   });
-  // $("input[name='password_new_one']").keyup(function(){
-  //   updateError(checkSame());
-  // });
-  // $("input[name='password_new_two']").keyup(function(){
-  //   updateError(checkSame());
-  // });
 });
 
 // var bodyClass = document.body.classList,
