@@ -5,7 +5,6 @@ $(document).ready(function () {
   bodyClass.addClass("hideUp");
   $.get("/account_check", function( data ) {
     console.log(data);
-    console.log(data.login);
     if(!data.login) {
       $(".member_dropdown").hide();
     }

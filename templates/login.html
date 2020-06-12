@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>login</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
@@ -10,6 +11,7 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" type="text/css" href="../static/css/login.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9.14.4/dist/sweetalert2.all.min.js"></script>
   </head>
   <body>
     <div class="container" id="above-space"></div>
@@ -42,13 +44,13 @@
           <div>
             <p class="text-center">
               還沒有帳號？
-              <a href="../templates/sign_up.html">一鍵加入 iOSClub</a>
+              <a href="mailto:iosclub@mail.fcu.edu.tw">一鍵加入 iOSClub</a>
             </p>
           </div>
         </div>
       </div>
     </div>
-    <script src="../static/js/jquery-3.5.0.min.js"></script>
+    <script src="../static/js/jquery-3.5.1.js"></script>
     <script src="../static/js/login.js"></script>
   <script
       src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"

@@ -7,10 +7,7 @@ $(document).ready(function () {
     let date = $('#input_date').val();
     let reason = $('#input_reason').val();
     let types = $('#day-off').val();
-    let account = $('#input_account').val()
-    console.log(date);
-    console.log(reason);
-    console.log(types);
+    let account = $('#input_account').val();
     jQuery.ajax({ //post form資料 抓取json檔案
       type:"POST",
       url: '/send_dayOff',
@@ -19,6 +16,19 @@ $(document).ready(function () {
       dataType: "json",
       success: function(res) { //連到伺服器
         console.log(res);
+        Swal.fire({
+          icon: 'success',
+          title: "請假申請已送出",
+          text: "社團將在三日內審核，請至信箱查收！"
+         });
+      },
+      error: function (res) {
+        console.log(res);
+        Swal.fire({
+          icon: 'error',
+          title: "你是奇丁嗎？",
+          text: "不，我是喜瑞爾斯。請稍後再試一次。"
+        });
       }
     });
   });

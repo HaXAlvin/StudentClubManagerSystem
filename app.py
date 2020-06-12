@@ -357,27 +357,25 @@ def announcement_data():
 @app.route('/attendance', methods=['GET'])  # 出席
 def attendance():
     conn.ping(reconnect=True)
-    member_id = []
-    member_name = []
+    data = {'id': [], 'name': []}
     try:
         with conn.cursor() as cursor:
             sql = "SELECT member_id,member_name FROM memberlist;"
             cursor.execute(sql)
             results = cursor.fetchall()
             for row in results:
-                member_id.append(row[0])
-                member_name.append(row[1])
+                data['id'].append(row[0])
+                data['name'].append(row[1])
             sql = "SELECT * FROM class_state;"
             cursor.execute(sql)
             results = cursor.fetchall()
     except pymysql.err.OperationalError as e:
         print(e)
         return e
-    data = {'id': member_id, 'name': member_name}
     for row in results:
         row_date = row[2].strftime("%Y-%m-%d")
         if row_date not in data.keys():
-            data[row_date] = ["-" for _ in range(len(member_id))]
+            data[row_date] = ["-" for _ in range(len(data['id']))]
         update_index = data['id'].index(row[1])
         if (row[3], row[4]) in [(1, 1), (1, 0)]:
             data[row_date][update_index] = 'O'
@@ -405,6 +403,8 @@ def dayOff():
 def send_dayOff():
     req = request.json
     print(req)
+    if '' in req.values():
+        return jsonify({'msg': 'fail'}), 400
     sql = "insert into day_off (member_id, reason, day_off_date, send_time, day_off_type,day_off_accept) " \
           "values ((SELECT member_id FROM memberlist WHERE member_nid = %s),%s,%s,%s,%s,%s)"
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -449,9 +449,9 @@ def class_resource():
     return render_template('./class_resource.html')
 
 
-@app.route('/class_vedio', methods=['GET'])
-def class_vedio():
-    return render_template('./class_vedio.html')
+@app.route('/class_video', methods=['GET'])
+def class_video():
+    return render_template('./class_video.html')
 
 
 @app.route('/device_borrowed', methods=['GET'])
