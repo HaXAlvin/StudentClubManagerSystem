@@ -6,3 +6,4 @@ Flask==1.1.1
 Flask-JWT-Extended==3.24.1
 beautifulsoup4==4.9.0
 Pillow==7.1.2
+py3-validate-email 0.2.9

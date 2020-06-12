@@ -1,3 +1,4 @@
+from validate_email import validate_email
 from base64 import b64encode
 from datetime import timedelta, datetime
 from os import path
@@ -120,7 +121,7 @@ def login():
     sql = "SELECT member_nid,password,login_count FROM memberList WHERE member_nid = %s;"
     results = run_sql(sql, account, 'select')
     if results is None or psw_encrypt(password) != results['res'][0][1]:
-        return jsonify({"login": False, "msg": "Bad account or password"}), 401
+        return jsonify({"login": False, "msg": "Bad account or password"}), 400
     access_token = jwt_create_token('access', account)
     refresh_token = jwt_create_token('refresh', account)
     get_next = request.json.get('next', None).replace('%2F', '/')
@@ -134,13 +135,13 @@ def login():
     resp = jsonify({'login': True, 'next': next_page})
     f_jwt.set_access_cookies(resp, access_token)
     f_jwt.set_refresh_cookies(resp, refresh_token)
-    return resp
+    return resp, 200
 
 
 @app.route('/index', methods=['GET'])
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    return render_template('index.html'), 200
 
 
 @app.route('/enterIntroduce', methods=['GET'])
@@ -156,22 +157,25 @@ def enterIntroduce():
 def updateIntroduce():
     data = request.get_json()
     print(data)
+    if data['psw_new_one'] != data['psw_new_two']:
+        return jsonify({"login": False, "msg": "password"}), 400
+    if not validate_email(email=data['email']):
+        return jsonify({"login": False, "msg": "email"}), 400
     sql = "SELECT member_nid,password,login_count FROM memberList WHERE member_nid = %s;"
     results = run_sql(sql, data['account'], 'select')
     if results is None or psw_encrypt(data['psw_old']) != results['res'][0][1]:
-        return jsonify({"login": False, "msg": "Bad account or password"}), 401
+        return jsonify({"login": False, "msg": "Bad account or password"}), 400
     sex = 'M' if data['male'] else 'F'
-    psw = psw_encrypt(data['psw_new'])
+    psw = psw_encrypt(data['psw_new_one'])
     val = (psw, sex, data['date'], data['email'], data['account'])
     print(val)
     sql = "UPDATE memberlist SET password=%s,sex=%s,birth=%s,`e-mail`=%s,login_count=login_count+1 WHERE member_nid=%s"
     res = run_sql(sql, val, 'update')
-    print(res)
     if not res:
         res = jsonify({'login': True, 'update': True})
         f_jwt.unset_jwt_cookies(res)
         return res
-    return jsonify({'login': True, 'update': False})
+    return jsonify({'login': True, 'update': False}), 401
 
 
 @jwtAPP.expired_token_loader  # 逾期func

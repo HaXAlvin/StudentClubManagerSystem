@@ -1,11 +1,6 @@
 var bodyClass = $(".auto-hide-header"),
   lastScrollY = 0;
 
-function validateEmail($email) {
-  var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,6})?$/;
-  return ($email.length > 0 && emailReg.test($email));
-}
-
 $(document).ready(function () {
   bodyClass.addClass("hideUp");
   var male = 1;
@@ -22,24 +17,22 @@ $(document).ready(function () {
     psw_new_two = $('input[name="password_new_two"]').val();
     date = $('input[name="date"]').val();
     account = $('input[name="account"]').val();
-    // console.log(password_new_one);
-    if (!validateEmail(email)&&(psw_new_one!=psw_new_two||!psw_old||!psw_new_one||!psw_new_two||!email||!date||!account)){
+    if (!psw_old||!psw_new_one||!psw_new_two||!email||!date){
+      Swal.fire({
+            icon: 'error',
+            title: "你是奇丁嗎？",
+            text: "空著幹嘛啦，討厭>3<"
+      });
       return;
     }
-    console.log(email);
-    console.log(psw_old);
-    console.log(psw_new_two);
-    console.log(psw_new_one);
-    console.log(date);
-    console.log(male);
-    console.log(account);
     $.ajax({
       type:"POST",
       url: '/updateIntroduce',
       data:JSON.stringify({
         'email':email,
         'psw_old':psw_old,
-        'psw_new':psw_new_one,
+        'psw_new_one':psw_new_one,
+        'psw_new_two':psw_new_two,
         'date':date,
         'male':male,
         'account':account
@@ -51,6 +44,20 @@ $(document).ready(function () {
         if(res['login'] == true && res['update'] == true){
           $(location). attr('href','/login');
         }
+      },
+      error: function (res) {
+        msg = res.responseJSON.msg;
+        var text = "你確定你記得你的密碼嗎？"
+        if (msg == "email"){
+          text = "Email怪怪的餒？"
+        }else if(msg == "password"){
+          text = "打兩次很難ㄇ"
+        }
+        Swal.fire({
+            icon: 'error',
+            title: "你是奇丁嗎？",
+            text: text
+        });
       }
     });
   });
