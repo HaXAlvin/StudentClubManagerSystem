@@ -4,7 +4,8 @@ from datetime import timedelta, datetime
 from os import path
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, url_for, redirect
-import flask_jwt_extended as f_jwt
+from flask_jwt_extended import jwt_required, JWTManager, create_refresh_token, create_access_token, set_refresh_cookies, \
+    set_access_cookies, get_jwt_identity, unset_jwt_cookies, decode_token
 from flask_apscheduler import APScheduler
 import pyqrcode
 from hashlib import sha256, sha512
@@ -15,7 +16,6 @@ from random import choice
 from string import ascii_letters
 from time import sleep
 from io import BytesIO
-import jwt
 
 
 class Config:
@@ -26,11 +26,12 @@ class Config:
     # jwt set
     JWT_SECRET_KEY = sha256("i05c1u652005505".encode('utf-8')).hexdigest()
     JWT_TOKEN_LOCATION = 'cookies'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=300)  # 逾期時間
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=3000)  # 逾期時間
     JWT_ALGORITHM = 'HS256'  # hash type
     JWT_ACCESS_COOKIE_NAME = 'access_token_cookie'  # cookie name
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(seconds=300)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(seconds=3000)
     JWT_ACCESS_COOKIE_PATH = '/'
+    JWT_ACCESS_CSRF_HEADER_NAME = 'X-CSRF-TOKEN'
     # db set
     DB_PORT = 3306
     DB_USER = 'root'
@@ -56,7 +57,7 @@ class Config:
 
 app = Flask(__name__)
 app.config.from_object(Config())  # get setting
-jwtAPP = f_jwt.JWTManager(app)
+jwtAPP = JWTManager(app)
 punch_record = []
 img_path = path.dirname(path.abspath(__file__)) + '/static/img'
 logos = [Image.open(img_path + f'/icon/icon0{i}.png') for i in range(1, 5)]
@@ -78,11 +79,18 @@ while True:
 
 
 def jwt_create_token(types, account):
-    method = {'access': f_jwt.create_access_token, 'refresh': f_jwt.create_refresh_token}
+    method = {'access': create_access_token, 'refresh': create_refresh_token}
     return method[types](identity={'account': account}, headers={"typ": "JWT", "alg": "HS256"})
 
 
+def nid_to_id(account):
+    sql = "SELECT member_id FROM member_list WHERE member_nid = %s"
+    res = run_sql(sql, account, 'select')
+    return res['res'][0]
+
+
 def run_sql(sql, val, types):
+    types = types.lower()
     try:
         conn.ping(reconnect=True)
         with conn.cursor() as cursor:
@@ -90,7 +98,7 @@ def run_sql(sql, val, types):
             res = cursor.fetchall()
             if not res:
                 return None
-            if types == 'update':
+            if types == 'update' or types == 'insert':
                 conn.commit()
                 return res
             if types == 'select':
@@ -103,6 +111,19 @@ def run_sql(sql, val, types):
 
 def psw_encrypt(psw):
     return sha512(psw.encode('utf-8')).hexdigest().upper()
+
+
+@jwtAPP.expired_token_loader  # 逾期func
+def my_expired():
+    resp = redirect(url_for('login', next=request.path))
+    unset_jwt_cookies(resp)
+    return resp, 302
+
+
+@jwtAPP.unauthorized_loader
+def miss_token(err_msg):
+    print(err_msg)
+    return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -118,7 +139,7 @@ def login():
         return jsonify({"login": False, "msg": "Missing account parameter"}), 400
     if not password:
         return jsonify({"login": False, "msg": "Missing password parameter"}), 400
-    sql = "SELECT member_nid,password,login_count FROM memberList WHERE member_nid = %s;"
+    sql = "SELECT member_nid,password,login_count FROM member_list WHERE member_nid = %s;"
     results = run_sql(sql, account, 'select')
     if results is None or psw_encrypt(password) != results['res'][0][1]:
         return jsonify({"login": False, "msg": "Bad account or password"}), 400
@@ -129,12 +150,12 @@ def login():
         next_page = '/enterIntroduce'
     else:
         next_page = '/' if not get_next else get_next
-        res = run_sql("UPDATE memberlist SET login_count = login_count+1 WHERE member_nid = %s", account, 'update')
+        res = run_sql("UPDATE member_list SET login_count = login_count+1 WHERE member_nid = %s", account, 'update')
         print(res)
     print(next_page)
     resp = jsonify({'login': True, 'next': next_page})
-    f_jwt.set_access_cookies(resp, access_token)
-    f_jwt.set_refresh_cookies(resp, refresh_token)
+    set_access_cookies(resp, access_token)
+    set_refresh_cookies(resp, refresh_token)
     return resp, 200
 
 
@@ -145,9 +166,9 @@ def index():
 
 
 @app.route('/enterIntroduce', methods=['GET'])
-@f_jwt.jwt_optional
+@jwt_required
 def enterIntroduce():
-    identity = f_jwt.get_jwt_identity()
+    identity = get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='/enterIntroduce'))
     return render_template('enterIntroduce.html', account=identity['account'])
@@ -161,7 +182,7 @@ def updateIntroduce():
         return jsonify({"login": False, "msg": "password"}), 400
     if not validate_email(email=data['email']):
         return jsonify({"login": False, "msg": "email"}), 400
-    sql = "SELECT member_nid,password,login_count FROM memberList WHERE member_nid = %s;"
+    sql = "SELECT member_nid,password,login_count FROM member_list WHERE member_nid = %s;"
     results = run_sql(sql, data['account'], 'select')
     if results is None or psw_encrypt(data['psw_old']) != results['res'][0][1]:
         return jsonify({"login": False, "msg": "Bad account or password"}), 400
@@ -169,27 +190,20 @@ def updateIntroduce():
     psw = psw_encrypt(data['psw_new_one'])
     val = (psw, sex, data['date'], data['email'], data['account'])
     print(val)
-    sql = "UPDATE memberlist SET password=%s,sex=%s,birth=%s,`e-mail`=%s,login_count=login_count+1 WHERE member_nid=%s"
+    sql = "UPDATE member_list SET password=%s,sex=%s,birth=%s,`e-mail`=%s,login_count=login_count+1 WHERE member_nid=%s"
     res = run_sql(sql, val, 'update')
     if not res:
         res = jsonify({'login': True, 'update': True})
-        f_jwt.unset_jwt_cookies(res)
+        unset_jwt_cookies(res)
         return res
     return jsonify({'login': True, 'update': False}), 401
-
-
-@jwtAPP.expired_token_loader  # 逾期func
-def my_expired():
-    resp = redirect(url_for('login', next=request.path))
-    f_jwt.unset_jwt_cookies(resp)
-    return resp, 302
 
 
 @app.route('/searchName', methods=['POST'])
 def search_name():
     conn.ping(reconnect=True)
     res = {'result': 'no'}
-    sql = "SELECT * FROM memberList WHERE member_name LIKE %s;"
+    sql = "SELECT * FROM member_list WHERE member_name LIKE %s;"
     val = '%' + request.json.get('data', None) + '%'
     results = run_sql(sql, val, 'select')
     if results is None:
@@ -227,9 +241,9 @@ def query():
 
 
 @app.route('/search', methods=['GET'])
-@f_jwt.jwt_optional
+@jwt_required
 def search():
-    identity = f_jwt.get_jwt_identity()
+    identity = get_jwt_identity()
     print('search identity:', identity)
     if identity is None:
         redirect(url_for('login', next='/search'))
@@ -237,7 +251,7 @@ def search():
 
 
 def manager_check(account):
-    sql = 'SELECT member_nid, manager FROM memberlist where member_nid = %s;'
+    sql = 'SELECT member_nid, manager FROM member_list where member_nid = %s;'
     results = run_sql(sql, account, 'select')
     if not results:
         return None  # error nid
@@ -245,15 +259,15 @@ def manager_check(account):
 
 
 @app.route('/create_qrcode', methods=['GET'])
-@f_jwt.jwt_optional
+@jwt_required
 def create_qrcode():
-    identity = f_jwt.get_jwt_identity()
+    identity = get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='create_qrcode'))
     accept = manager_check(identity['account'])
     if accept is None:
         res = redirect(url_for('login', next='create_qrcode'))
-        f_jwt.unset_jwt_cookies(res)
+        unset_jwt_cookies(res)
         return res
     if accept is False:
         return redirect(url_for('index'))
@@ -278,9 +292,9 @@ def create_qrcode():
 
 
 @app.route('/punch_in/<code>')
-@f_jwt.jwt_optional
+@jwt_required
 def punch_in(code):
-    identity = f_jwt.get_jwt_identity()
+    identity = get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='/punch_in/' + code))
     for record in punch_record:
@@ -299,9 +313,8 @@ def punch_in_sql(account):
     try:
         with conn.cursor() as cursor:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            sql = "INSERT INTO class_state(member_id, date, attendance, register) " \
-                  "VALUES((SELECT member_id FROM memberlist WHERE member_nid = %s), %s, 1, 1);"
-            cursor.execute(sql, (account, now))
+            sql = "INSERT INTO class_state(member_id, date, attendance, register) VALUES(%s, %s, 1, 1);"
+            cursor.execute(sql, (nid_to_id(account), now))
             results = cursor.fetchall()
             if not results:
                 conn.commit()
@@ -315,13 +328,13 @@ def punch_in_sql(account):
 
 
 @app.route('/punch_list', methods=['GET'])  # 個人出席
-@f_jwt.jwt_optional
+@jwt_required
 def punch_list():
     conn.ping(reconnect=True)
-    identity = f_jwt.get_jwt_identity()
+    identity = get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='/punch_list'))
-    sql = "SELECT date FROM class_state WHERE member_id = (SELECT member_id FROM memberlist WHERE member_nid = %s);"
+    sql = "SELECT date FROM class_state WHERE member_id = (SELECT member_id FROM member_list WHERE member_nid = %s);"
     res = run_sql(sql, identity['account'], 'select')
     if res is None:
         return jsonify({'msg': 'fail'})
@@ -364,7 +377,7 @@ def attendance():
     data = {'id': [], 'name': []}
     try:
         with conn.cursor() as cursor:
-            sql = "SELECT member_id,member_name FROM memberlist;"
+            sql = "SELECT member_id,member_name FROM member_list;"
             cursor.execute(sql)
             results = cursor.fetchall()
             for row in results:
@@ -395,9 +408,9 @@ def attendance():
 
 
 @app.route('/dayOff', methods=['GET'])
-@f_jwt.jwt_optional
+@jwt_required
 def dayOff():
-    identity = f_jwt.get_jwt_identity()
+    identity = get_jwt_identity()
     if identity is None:
         return redirect(url_for('login', next='/dayOff'))
     return render_template('dayOff.html', account=identity['account'])
@@ -410,10 +423,10 @@ def send_dayOff():
     if '' in req.values():
         return jsonify({'msg': 'fail'}), 400
     sql = "insert into day_off (member_id, reason, day_off_date, send_time, day_off_type,day_off_accept) " \
-          "values ((SELECT member_id FROM memberlist WHERE member_nid = %s),%s,%s,%s,%s,%s)"
+          "values ((SELECT member_id FROM member_list WHERE member_nid = %s),%s,%s,%s,%s,%s)"
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     val = (req['account'], req['reason'], req['date'], datetime.now().strftime("%Y-%m-%d %H:%M:%S"), req['types'], 0)
-    res = run_sql(sql, val, 'update')
+    res = run_sql(sql, val, 'insert')
     conn.commit()
     print(res)
     return jsonify({'msg': 'success'})
@@ -421,26 +434,53 @@ def send_dayOff():
 
 @app.route('/Audit_DayOff_data', methods=['POST'])
 def Audit_DayOff_data():
-    sql = 'SELECT b.member_name,b.member_department ,a.reason,a.day_off_date,a.day_off_type ' \
-          'FROM day_off as a ,memberlist as b where a.day_off_accept=0 and a.member_id=b.member_id;'
-    # day_off_sql = 'SELECT %s FROM day_off where day_off_accept = 0;'
+    sql = 'SELECT b.member_name,b.member_department ,a.reason,a.day_off_date,a.day_off_type,a.day_off_id ' \
+          'FROM day_off as a ,member_list as b where a.day_off_accept=0 and a.member_id=b.member_id;'
     res = run_sql(sql, (), 'select')
-    # print(dep)
     if res is None:
         return jsonify(None)
-    data = {'len': len(res['res']), 'department': [], 'name': [], 'reason': [], 'date': []}
+    data = {'len': len(res['res']), 'name': [], 'department': [],  'reason': [], 'date': [], 'type': [], 'df_id': []}
     for i in res['res']:
         data['name'].append(i[0])
         data['department'].append(i[1])
         data['reason'].append(i[2])
         data['date'].append(i[3].strftime("%Y/%m/%d"))
-    print(data)
+        data['type'].append(i[4])
+        data['df_id'].append(i[5])
+    # print(data)
     return jsonify(data)
 
 
 @app.route('/Audit_DayOff', methods=['GET'])
+@jwt_required
 def Audit_DayOff():
     return render_template('./Audit_DayOff.html')
+
+
+@app.route('/Audit_DayOff_Accept', methods=['POST'])
+@jwt_required
+def Audit_DayOff_Accept():
+    identity = get_jwt_identity()
+    day_off_id = request.json.get('day_off_id', None)
+    print(day_off_id)
+    if day_off_id is None:
+        return jsonify({'msg': 'error'}), 400
+    sql = "UPDATE day_off SET day_off_accept = 1,audit_manager=%s WHERE day_off_id = %s"
+    val = (nid_to_id(identity['account']), day_off_id)
+    res = run_sql(sql, val, 'update')
+    if res is not None:
+        return jsonify({'msg': 'error'}), 400
+    conn.commit()
+    sql = "SELECT * from day_off where day_off_id = %s"
+    res = run_sql(sql, day_off_id, 'select')
+    if res is None:
+        return jsonify({'msg': 'error'}), 400
+    res = res['res'][0]
+    sql = "insert into class_state (member_id, date,attendance,register) values (%s,%s,%s,%s)"
+    res = run_sql(sql, (res[1], res[3], 0, 1), 'insert')
+    if res is None:
+        return jsonify({'msg': 'success'}), 200
+    return jsonify({'msg': 'error'}), 400
 
 
 @app.route('/class_information', methods=['GET'])
@@ -489,17 +529,12 @@ def clean_record():  # clean qrcode list every specific time
     print(f"**Ended Clean at {now_time}**")
 
 
-@app.route('/account_check', methods=['GET'])  # check if
+@app.route('/account_check', methods=['GET'])  # using to control nav
 def account_check():
     token = request.cookies.get('access_token_cookie', None)
-    # try:
-    #     jwt.decode('JWT_STRING', 'secret', algorithms=['HS256'])
-    # except jwt.ExpiredSignatureError:
-    # # Signature has expired
     if not token:
         return jsonify({'login': False, 'manager': False})
-    key = app.config.get('JWT_SECRET_KEY')
-    jwt_info = jwt.decode(token, key, algorithms=['HS256'], verify=False)
+    jwt_info = decode_token(token)
     print(jwt_info['identity']['account'])
     return jsonify({'manager': manager_check(jwt_info['identity']['account']), 'login': True})
 
@@ -510,7 +545,7 @@ if __name__ == '__main__':
     scheduler.start()
     app.run(port=app.config.get('PORT'), host=app.config.get('HOST'))
 
-# CSRF refresh
+# TODO: CSRF refresh
 # @app.route('/refresh', methods=['POST'])
 # @jwt_refresh_token_required
 # def refresh():

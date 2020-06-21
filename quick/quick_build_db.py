@@ -34,11 +34,12 @@ conn = pymysql.connect(
 )
 cursor = conn.cursor()
 
+dropTable("device_list")
 dropTable("day_off")
 dropTable("class_state")
 dropTable("rtc_state")
-dropTable("memberlist")
 dropTable("comment")
+dropTable("member_list")
 dropTable("announcement")
 
 executeScriptsFromFile('create_table.sql')
@@ -49,9 +50,9 @@ for i in range(df.shape[1]):
     pwd = sha512(seed.encode('utf-8')).hexdigest().upper()
     manager = df[i][10]
     val = (df[i][0], df[i][1], df[i][2], df[i][3], df[i][4],
-           df[i][5], df[i][6], df[i][7], df[i][8], pwd, manager)
+           df[i][5], df[i][6], df[i][7], df[i][8], None, pwd, manager)
     print(val)
-    sql = "insert into memberlist VALUE (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0);"
+    sql = "insert into member_list VALUE (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0);"
     cursor.execute(sql, val)
 conn.commit()
 
@@ -77,5 +78,13 @@ for i in range(df.shape[1]):
     val = (df[i][0], df[i][1], df[i][2], df[i][3], df[i][4], df[i][5])
     print(val)
     sql = "insert into announcement VALUE (%s,%s,%s,%s,%s,%s);"
+    cursor.execute(sql, val)
+conn.commit()
+
+df = pandas.read_csv("device.csv")
+for i in range(df.shape[0]):
+    val = [i if i != 'NN' else None for i in list(df.values[i])]
+    print(val)
+    sql = "insert into device_list values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     cursor.execute(sql, val)
 conn.commit()

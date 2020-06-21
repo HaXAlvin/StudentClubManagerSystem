@@ -3,6 +3,20 @@ var bodyClass = $(".auto-hide-header"),
 
 $(document).ready(function () {
   bodyClass.addClass("hideUp");
+  // jQuery.ajax({ //post form資料 抓取json檔案
+  //     type: "GET",
+  //     url: '/',
+  //     data: JSON.stringify({'account': account, 'password': password, 'next': next}), //post form
+  //     contentType: "application/json; charset=utf-8",
+  //     dataType: "json",
+  //     success: function (res) { //連到伺服器
+  //         console.log(res['login']);
+  //         console.log(res['next']);
+  //         if (res['login'] == true) {
+  //             $(location).attr('href', res['next']);
+  //         }
+  //     }
+  // });
   $.get("/account_check", function( data ) {
     console.log(data);
     if(!data.login) {
