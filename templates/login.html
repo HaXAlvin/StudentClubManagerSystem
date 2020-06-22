@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>login</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='favicon.ico') }}"
+    />
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
@@ -31,18 +34,25 @@
             <div class="col-sm-10">
               <form name="accpass">
                 <div class="container" id="accountBox">
-                  <label for="input_account">帳號：</label><input type="text" id="input_account" name="account" />
-<!--                  here-->
+                  <label for="input_account">帳號：</label
+                  ><input type="text" id="input_account" name="account" />
+                  <!--                  here-->
                 </div>
                 <div class="betweenAccountPassword"></div>
                 <div class="container" id="passwordBox">
-                  <label for="input_pwd">密碼：</label><input type="password" id="input_pwd" name="password"/>
+                  <label for="input_pwd">密碼：</label
+                  ><input type="password" id="input_pwd" name="password" />
                 </div>
                 <div class="betweenAccountPassword"></div>
                 <div id="button_div">
-                  <input type="button" id="btn_login" value="登入"/>
+                  <input type="button" id="btn_login" value="登入" />
                 </div>
-                <input type="hidden" id="next" name="next" value="{{ request.args.get('next', '') }}"/>
+                <input
+                  type="hidden"
+                  id="next"
+                  name="next"
+                  value="{{ request.args.get('next', '') }}"
+                />
               </form>
             </div>
           </div>
@@ -50,15 +60,58 @@
           <div>
             <p class="text-center">
               還沒有帳號？
-              <a href="mailto:iosclub@mail.fcu.edu.tw?subject=Join iOS Club">一鍵加入 iOSClub</a>
+              <a href="mailto:iosclub@mail.fcu.edu.tw?subject=Join iOS Club"
+                >一鍵加入 iOSClub</a
+              >
             </p>
           </div>
         </div>
       </div>
     </div>
+    <div style="height: 250px;"></div>
+    <hr class="gradiant" />
+    <div class="row">
+      <div class="col-md-3"></div>
+      <div class="col-md-6" style="text-align: center;">
+        <div class="row">
+          <div class="col-4">
+            <a href="https://www.facebook.com/FCU.iOSClub/?ref=bookmarks">
+              <img
+                src="../static/img/icon/facebook.png"
+                alt="fb"
+                style="width: 15%; margin-right: 0px;"
+              />
+              <p>facebook</p>
+            </a>
+          </div>
+          <div class="col-4">
+            <a href="https://www.instagram.com/fcu.iosclub/?hl=zh-tw">
+              <img
+                src="../static/img/icon/instagram.png"
+                alt="ig"
+                style="width: 15%; margin-right: 0px;"
+              />
+              <p>instagram</p>
+            </a>
+          </div>
+          <div class="col-4">
+            <a href="https://iosclub.tw/">
+              <img
+                src="../static/img/icon/iosclub.png"
+                alt="iosclub"
+                style="width: 15%;"
+              />
+              <p>iOS Club</p>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3"></div>
+    </div>
+    <div style="height: 30px;"></div>
     <script src="../static/js/jquery-3.5.1.js"></script>
     <script src="../static/js/login.js"></script>
-  <script
+    <script
       src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
       integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
       crossorigin="anonymous"
