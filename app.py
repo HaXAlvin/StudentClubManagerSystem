@@ -570,7 +570,10 @@ def Audit_borrowed():
 @app.route('/Audit_borrowed_data', methods=['POST'])
 @jwt_required
 def Audit_borrowed_data():
-    sql = 'SELECT b.member_name,b.member_department ,a.borrowed_reason,a.borrowed_start_date,a.borrowed_end_date,c.device_name,a.borrowed_count,c.device_unit,a.borrowed_id FROM device_borrowed as a ,member_list as b ,device_list as c where a.borrowed_accept=0 and a.borrower = b.member_id and c.device_id = a.device_id;'
+    sql = 'SELECT b.member_name,b.member_department ,a.borrowed_reason,a.borrowed_start_date,a.borrowed_end_date,' \
+          'c.device_name,a.borrowed_count,c.device_unit,a.borrowed_id ' \
+          'FROM device_borrowed as a ,member_list as b ,device_list as c ' \
+          'where a.borrowed_accept=0 and a.borrower = b.member_id and c.device_id = a.device_id;'
     res = run_sql(sql, (), 'select')
     print(res)
     if res is None:
@@ -626,6 +629,11 @@ def active_information():
 @app.route('/update_class_resource', methods=['GET'])
 def update_class_resource():
     return render_template('./update_class_resource.html')
+
+
+@app.route('/return_device_outer', methods=['GET'])
+def return_device_outer():
+    return render_template('./return_device_outer.html')
 
 
 def clean_record():  # clean qrcode list every specific time
