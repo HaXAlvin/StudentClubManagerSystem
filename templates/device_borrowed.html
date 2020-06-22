@@ -15,6 +15,8 @@
       crossorigin="anonymous"
     />
     <script src="../static/js/jquery-3.5.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9.14.4/dist/sweetalert2.all.min.js"></script>
+    <script src="../static/js/device_borrowed.js"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
       integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
@@ -234,42 +236,30 @@
       <form action="" id="form-context" style="text-align: center;">
         <p class="justify-content-end">
           借用日期（開始）&nbsp;
-          <input type="date" />
+          <input id="start-date" type="date" />
         </p>
         <p class="justify-content-end">
           借用日期（結束） &nbsp;
-          <input type="date" />
+          <input id="end-date" type="date" />
         </p>
         <p>
           借用設備 &nbsp;
-          <select name="請假" id="day-off">
-            <option value="personal-leave">iPad</option>
-            <option value="sick-leave">繪圖板</option>
-            <option value="menstrual-leave">macbook</option>
+          <select id="device-name-select">
           </select>
         </p>
         <p>
           借用數量 &nbsp;
-          <select name="請假">
-            <option value="personal-leave">1</option>
-            <option value="sick-leave">2</option>
-            <option value="menstrual-leave">3</option>
+          <select id="device-count-select">
+
           </select>
         </p>
         <p>
           聯絡電話 &nbsp;
-          <input type="phone" />
+          <input id="input_phone" type="phone" />
         </p>
         <p>
           借用原因 &nbsp;
-          <textarea
-            id="input_reason"
-            name="textarea"
-            rows="3"
-            cols="30"
-            style="font-size: 16px;"
-          >
-          </textarea>
+          <textarea id="input_reason" name="textarea" rows="3" cols="30" style="font-size: 16px;"></textarea>
         </p>
 
         <input id="input_account" type="hidden" value="{{account}}" />
@@ -279,7 +269,7 @@
           <div class="center-content-inner">
             <div class="content-section content-section-margin">
               <div class="content-section-grid clearfix">
-                <a id="btn_dayOff" href="#" class="button nav-link">
+                <a id="btn_borrow" href="#" class="button nav-link">
                   <div class="bottom"></div>
 
                   <div class="top">

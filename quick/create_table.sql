@@ -82,9 +82,25 @@ create table `device_list`(
     `device_cost` int unsigned,
     `device_receipt` text,
     `device_remarks` mediumtext,
-    `device_location` varchar(150) not null,
+#     `device_location` varchar(150) not null,
     `borrowable` bool not null,
-    `borrower` int unsigned,
-    primary key(`device_id`),
-    foreign key(`borrower`) references member_list(`member_id`)
+#     `borrower` int unsigned,
+    primary key(`device_id`)
+#     foreign key(`borrower`) references member_list(`member_id`)
+);
+
+create table `device_borrowed`(
+    `borrowed_id` int unsigned not null auto_increment,
+    `borrowed_start_date` date not null,
+    `borrowed_end_date` date not null,
+    `device_id` int unsigned not null,
+    `borrowed_count` int unsigned not null,
+    `borrower` int unsigned not null,
+    `borrowed_reason` mediumtext not null ,
+    `borrowed_accept` bool not null default 0,
+    `audit_manager` int unsigned default null,
+    foreign key(`borrower`) references member_list(`member_id`),
+    foreign key(`audit_manager`) references member_list(`member_id`),
+    foreign key(`device_id`) references device_list(`device_id`),
+    primary key(borrowed_id)
 );

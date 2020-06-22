@@ -54,6 +54,7 @@ $(document).ready(function () {
       console.log(res);
       if (res === null) {
         $('#container').append("<h1>沒有人要請假</h1>");
+        return;
       }
       let i;
       var newcont = container;
@@ -91,8 +92,11 @@ function send_id(id) {
       Swal.fire({
           icon: 'success',
           title: "已審核",
-          text: "讚讚?"
-      });
+          text: "讚讚?",
+          timer: 3000
+      }).then((result) => {
+          location.reload();
+      })
     },
     error: function (res) {
       console.log(res);

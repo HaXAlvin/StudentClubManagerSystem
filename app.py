@@ -192,6 +192,7 @@ def updateIntroduce():
     print(val)
     sql = "UPDATE member_list SET password=%s,sex=%s,birth=%s,`e-mail`=%s,login_count=login_count+1 WHERE member_nid=%s"
     res = run_sql(sql, val, 'update')
+    conn.commit()
     if not res:
         res = jsonify({'login': True, 'update': True})
         unset_jwt_cookies(res)
@@ -437,9 +438,10 @@ def Audit_DayOff_data():
     sql = 'SELECT b.member_name,b.member_department ,a.reason,a.day_off_date,a.day_off_type,a.day_off_id ' \
           'FROM day_off as a ,member_list as b where a.day_off_accept=0 and a.member_id=b.member_id;'
     res = run_sql(sql, (), 'select')
+    print(res)
     if res is None:
         return jsonify(None)
-    data = {'len': len(res['res']), 'name': [], 'department': [],  'reason': [], 'date': [], 'type': [], 'df_id': []}
+    data = {'len': len(res['res']), 'name': [], 'department': [], 'reason': [], 'date': [], 'type': [], 'df_id': []}
     for i in res['res']:
         data['name'].append(i[0])
         data['department'].append(i[1])
@@ -499,8 +501,42 @@ def class_video():
 
 
 @app.route('/device_borrowed', methods=['GET'])
+@jwt_required
 def device_borrowed():
-    return render_template('./device_borrowed.html')
+    identity = get_jwt_identity()
+    if identity is None:
+        return redirect(url_for('login', next='/device_borrowed'))
+    return render_template('./device_borrowed.html', account=identity['account'])
+
+
+@app.route('/device_borrowed_data', methods=['POST'])
+@jwt_required
+def device_borrowed_data():
+    sql = "select * from device_list where borrowable = 1"  # todo 123
+    res = run_sql(sql, (), 'select')
+    # print(res)
+    device = [{'id': i[0], 'name': i[1], 'count': i[4]} for i in res['res']]
+    print(device)
+    return jsonify(device)
+
+
+@app.route('/send_borrow', methods=['POST'])
+@jwt_required
+def send_borrow():
+    req = request.json
+    if '' in req.values():
+        return jsonify({'msg': 'empty'}), 400
+    print(req)
+    sql = "insert into device_borrowed " \
+          "(borrowed_start_date, borrowed_end_date, device_id, borrowed_count, borrower,borrowed_reason) " \
+          "values (%s,%s,%s,%s,%s,%s)"
+    val = [req['start_date'], req['end_date'], req['device'], req['count'], nid_to_id(req['account']), req['reason']]
+    print(val)
+    res = run_sql(sql, val, 'insert')
+    conn.commit()
+    if res is None:
+        return jsonify({'msg': 'success'}), 200
+    return jsonify({'msg': 'error'}), 400
 
 
 @app.route('/Audit_borrowed', methods=['GET'])
@@ -535,7 +571,7 @@ def account_check():
     if not token:
         return jsonify({'login': False, 'manager': False})
     jwt_info = decode_token(token)
-    print(jwt_info['identity']['account'])
+    # print(jwt_info['identity']['account'])
     return jsonify({'manager': manager_check(jwt_info['identity']['account']), 'login': True})
 
 

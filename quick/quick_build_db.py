@@ -34,6 +34,7 @@ conn = pymysql.connect(
 )
 cursor = conn.cursor()
 
+dropTable("device_borrowed")
 dropTable("device_list")
 dropTable("day_off")
 dropTable("class_state")
@@ -83,8 +84,17 @@ conn.commit()
 
 df = pandas.read_csv("device.csv")
 for i in range(df.shape[0]):
-    val = [i if i != 'NN' else None for i in list(df.values[i])]
+    val = [j if j != 'NN' else None for j in list(df.values[i])]
     print(val)
-    sql = "insert into device_list values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    sql = "insert into device_list values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     cursor.execute(sql, val)
+conn.commit()
+
+df = pandas.read_csv('borrow.csv')
+for i in range(df.shape[0]):
+    sql = "insert into device_borrowed values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    val = [j if j != 'NN' else None for j in list(df.values[i])]
+    print(val)
+    cursor.execute(sql, val)
+    # print(val)
 conn.commit()

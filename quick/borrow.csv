@@ -1,0 +1,5 @@
+id,borrowed_start_date,borrowed_end_date,device_id,borrowed_count,borrower,reason,borrowed_accept,audit_manager
+1,2020-01-01,2020-07-01,7,1,7,haha,1,68
+2,2020-01-02,2020-07-02,10,1,8,it is mine,0,NN
+3,2020-01-03,2020-07-03,14,10,68,for fun,0,NN
+4,2020-01-04,2020-07-04,14,10,79,for class,0,NN
