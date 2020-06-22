@@ -21,12 +21,12 @@ $(document).ready(function () {
           <p class="overflowed">{content}</p>
         </div>
         <div class="row time-height">
-          <div class="col-sm-4"></div>
-          <div class="col-sm-4 down-line">
-            <p>日期 &nbsp {date}</p>
+          <div class="col-sm-6"></div>
+          <div class="col-sm-3 down-line">
+            <p align="right">日期 &nbsp {date}</p>
           </div>
-          <div class="col-sm-4">
-            <p class="click-percent">
+          <div class="col-sm-3">
+            <p class="click-percent" align="right" style="padding-right: 30px;">
               點擊率 &nbsp {view}
             </p>
           </div>

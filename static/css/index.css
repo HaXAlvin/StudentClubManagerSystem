@@ -69,3 +69,7 @@
   height: 300px;
   align-items: center; /* ★ */
 }
+
+.deep {
+  z-index: -100;
+}
