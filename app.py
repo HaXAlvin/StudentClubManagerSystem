@@ -4,8 +4,8 @@ from datetime import timedelta, datetime
 from os import path
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, url_for, redirect
-from flask_jwt_extended import jwt_required, JWTManager, create_refresh_token, create_access_token, set_refresh_cookies, \
-    set_access_cookies, get_jwt_identity, unset_jwt_cookies, decode_token
+from flask_jwt_extended import jwt_required, JWTManager, create_refresh_token, create_access_token, decode_token, \
+    set_refresh_cookies, set_access_cookies, get_jwt_identity, unset_jwt_cookies
 from flask_apscheduler import APScheduler
 import pyqrcode
 from hashlib import sha256, sha512
@@ -456,6 +456,14 @@ def Audit_DayOff_data():
 @app.route('/Audit_DayOff', methods=['GET'])
 @jwt_required
 def Audit_DayOff():
+    identity = get_jwt_identity()
+    accept = manager_check(identity['account'])
+    if accept is None:
+        res = redirect(url_for('login', next='create_qrcode'))
+        unset_jwt_cookies(res)
+        return res
+    if accept is False:
+        return redirect(url_for('index'))
     return render_template('./Audit_DayOff.html')
 
 
@@ -524,24 +532,90 @@ def device_borrowed_data():
 @jwt_required
 def send_borrow():
     req = request.json
-    if '' in req.values():
+    if '' in req.values() or req['start_date'] > req['end_date']:
         return jsonify({'msg': 'empty'}), 400
     print(req)
     sql = "insert into device_borrowed " \
           "(borrowed_start_date, borrowed_end_date, device_id, borrowed_count, borrower,borrowed_reason) " \
           "values (%s,%s,%s,%s,%s,%s)"
-    val = [req['start_date'], req['end_date'], req['device'], req['count'], nid_to_id(req['account']), req['reason']]
+    val = (req['start_date'], req['end_date'], req['device'], req['count'], nid_to_id(req['account']), req['reason'])
     print(val)
     res = run_sql(sql, val, 'insert')
+    if res is not None:
+        return jsonify({'msg': 'error'}), 400
     conn.commit()
-    if res is None:
-        return jsonify({'msg': 'success'}), 200
-    return jsonify({'msg': 'error'}), 400
+    sql = "UPDATE member_list SET phone = %s WHERE member_id = %s"
+    val = (req['phone'], nid_to_id(req['account']))
+    res = run_sql(sql, val, 'update')
+    if res is not None:
+        return jsonify({'msg': 'error'}), 400
+    conn.commit()
+    return jsonify({'msg': 'success'}), 200
 
 
 @app.route('/Audit_borrowed', methods=['GET'])
+@jwt_required
 def Audit_borrowed():
+    identity = get_jwt_identity()
+    accept = manager_check(identity['account'])
+    if accept is None:
+        res = redirect(url_for('login', next='create_qrcode'))
+        unset_jwt_cookies(res)
+        return res
+    if accept is False:
+        return redirect(url_for('index'))
     return render_template('./Audit_borrowed.html')
+
+
+@app.route('/Audit_borrowed_data', methods=['POST'])
+@jwt_required
+def Audit_borrowed_data():
+    sql = 'SELECT b.member_name,b.member_department ,a.borrowed_reason,a.borrowed_start_date,a.borrowed_end_date,c.device_name,a.borrowed_count,c.device_unit,a.borrowed_id FROM device_borrowed as a ,member_list as b ,device_list as c where a.borrowed_accept=0 and a.borrower = b.member_id and c.device_id = a.device_id;'
+    res = run_sql(sql, (), 'select')
+    print(res)
+    if res is None:
+        return jsonify(None)
+    data = {
+        'len': len(res['res']),
+        'name': [],
+        'department': [],
+        'reason': [],
+        'start_date': [],
+        'end_date': [],
+        'device_name': [],
+        'device_count': [],
+        'device_unit': [],
+        'bd_id': []
+    }
+    for i in res['res']:
+        data['name'].append(i[0])
+        data['department'].append(i[1])
+        data['reason'].append(i[2])
+        data['start_date'].append(i[3].strftime("%Y/%m/%d"))
+        data['end_date'].append(i[4].strftime("%Y/%m/%d"))
+        data['device_name'].append(i[5])
+        data['device_count'].append(i[6])
+        data['device_unit'].append(i[7])
+        data['bd_id'].append(i[8])
+    print(data)
+    return jsonify(data)
+
+
+@app.route('/Audit_borrowed_Accept', methods=['POST'])
+@jwt_required
+def Audit_borrowed_Accept():
+    identity = get_jwt_identity()
+    borrow_device_id = request.json.get('borrow_device_id', None)
+    print(borrow_device_id)
+    if borrow_device_id is None:
+        return jsonify({'msg': 'error'}), 400
+    sql = "UPDATE device_borrowed SET borrowed_accept = 1,audit_manager=%s WHERE borrowed_id = %s"
+    val = (nid_to_id(identity['account']), borrow_device_id)
+    res = run_sql(sql, val, 'update')
+    if res is not None:
+        return jsonify({'msg': 'error'}), 400
+    conn.commit()
+    return jsonify({'msg': 'success'}), 200
 
 
 @app.route('/active_information', methods=['GET'])
@@ -571,7 +645,6 @@ def account_check():
     if not token:
         return jsonify({'login': False, 'manager': False})
     jwt_info = decode_token(token)
-    # print(jwt_info['identity']['account'])
     return jsonify({'manager': manager_check(jwt_info['identity']['account']), 'login': True})
 
 

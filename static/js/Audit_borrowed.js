@@ -14,20 +14,20 @@ $(document).ready(function () {
         <h5>{department} {name}</h5>
       </div>
       <div>
-       <P>假別&nbsp{type}</P>
+       <P>借用設備&nbsp{device_name} {device_count}{device_unit}</P>
       </div>
       <div class="row annousement-context row text-padding">
-        <p>請假原因&nbsp{reason}</p>
+        <p>借用原因&nbsp{reason}</p>
       </div>
       <div class="row text-padding text-padding">
-        <p>日期&nbsp{date}</p>
+        <p>日期&nbsp{start_date}-{end_date}</p>
       </div>
       <section>
         <div class="center-content">
           <div class="center-content-inner">
             <div class="content-section content-section-margin">
               <div class="content-section-grid clearfix">
-                <a onclick="send_id({df_id})" href="#" class="df_check button nav-link">
+                <a onclick="send_id({bd_id})" href="#" class="df_check button nav-link">
                   <div class="bottom"></div>
                   <div class="top">
                     <div class="label">好哇 &nbsp; 給你請</div>
@@ -44,16 +44,18 @@ $(document).ready(function () {
       </section>
     </div>
   `
-  // let a_tag = '<a onclick="send_id({df_id})" href="#" class="df_check button nav-link">'
   $.ajax({
     type: "POST",
-    url: "/Audit_DayOff_data",
+    url: "/Audit_borrowed_data",
     contentType: "application/json; charset=utf-8",
     dataType: "json",
+    headers:{
+      'X-CSRF-TOKEN': readCookie('csrf_access_token')
+    },
     success: function (res) {
       console.log(res);
       if (res === null) {
-        $('#container').append("<h1>沒有人要請假</h1>");
+        $('#container').append("<h1>沒有人要借設備</h1>");
         return;
       }
       let i;
@@ -63,9 +65,12 @@ $(document).ready(function () {
         newcont = newcont.replace('{department}',res['department'][i]);
         newcont = newcont.replace('{name}',res['name'][i]);
         newcont = newcont.replace('{reason}',res['reason'][i]);
-        newcont = newcont.replace('{date}',res['date'][i]);
-        newcont = newcont.replace('{type}',res['type'][i]);
-        newcont = newcont.replace('{df_id}',res['df_id'][i]);
+        newcont = newcont.replace('{start_date}',res['start_date'][i]);
+        newcont = newcont.replace('{end_date}',res['end_date'][i]);
+        newcont = newcont.replace('{device_name}',res['device_name'][i]);
+        newcont = newcont.replace('{device_count}',res['device_count'][i]);
+        newcont = newcont.replace('{device_unit}',res['device_unit'][i]);
+        newcont = newcont.replace('{bd_id}',res['bd_id'][i]);
         if(i == res['len']-1) {
           newcont = newcont.replace('{data_1}', "<div class='col-5'></div>");
           $('#container').append(newcont);
@@ -80,8 +85,8 @@ $(document).ready(function () {
 function send_id(id) {
   $.ajax({
     type: "POST",
-    url: '/Audit_DayOff_Accept',
-    data: JSON.stringify({'day_off_id': id}), //post form
+    url: '/Audit_borrowed_Accept',
+    data: JSON.stringify({'borrow_device_id': id}), //post form
     contentType: "application/json; charset=utf-8",
     dataType: "json",
     headers:{
