@@ -7,7 +7,10 @@
       content="逢甲大學 iOS Club 為台灣第一個與蘋果合作之社團，希望能透過逢甲 RTC 區域教育培訓中心，讓本社團之學生能夠充分利用學校資源，培養程式設計的基本能力與邏輯觀念。本社團將會規劃許多程式開發課程，從基本的邏輯觀念，到讓同學自行創意發想 App。希冀100%的社員都對 App 有基礎概念，並能熟練程式設計，甚至精熟這項領域。"
     />
     <title>社課資訊</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='favicon.ico') }}"
+    />
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
@@ -26,6 +29,19 @@
       crossorigin="anonymous"
     ></script>
     <link rel="stylesheet" href="../static/css/class_information.css" />
+    <script>
+      function picture() {
+        return {
+          img: require("../static/img/RTC/RTC08.jpg"),
+        };
+      }
+    </script>
+    <style>
+      body {
+        font-family: "LiHei Pro Medium", Comic Sans MS, arial, helvetica,
+          sans-serif;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -45,17 +61,13 @@
           <nav class="navbar main-nav navbar-expand-lg navbar-light">
             <ul class="navbar-nav mx-auto">
               <li class="nav-item">
-                <a href="class_information" class="nav-link"
-                  >社課資訊</a
-                >
+                <a href="class_information" class="nav-link">社課資訊</a>
               </li>
               <li class="nav-item">
                 <a href="/announcement" class="nav-link">社團公告</a>
               </li>
               <li class="nav-item">
-                <a href="/active_information" class="nav-link"
-                  >活動資訊</a
-                >
+                <a href="/active_information" class="nav-link">活動資訊</a>
               </li>
               <li class="nav-item dropdown member_dropdown">
                 <a
@@ -69,19 +81,9 @@
                   社員專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="/dayOff"
-                    >請假</a
-                  >
-                  <a
-                    class="dropdown-item"
-                    href="/class_resource"
-                    >社課資源</a
-                  >
-                  <a
-                    class="dropdown-item"
-                    href="/device_borrowed"
-                    >設備借用</a
-                  >
+                  <a class="dropdown-item" href="/dayOff">請假</a>
+                  <a class="dropdown-item" href="/class_resource">社課資源</a>
+                  <a class="dropdown-item" href="/device_borrowed">設備借用</a>
                 </div>
               </li>
               <li class="nav-item dropdown manager_dropdown">
@@ -96,29 +98,19 @@
                   幹部專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="/Audit_DayOff"
-                    >請假審核</a
-                  >
-                  <a
-                    class="dropdown-item"
-                    href="/Audit_borrowed"
+                  <a class="dropdown-item" href="/Audit_DayOff">請假審核</a>
+                  <a class="dropdown-item" href="/Audit_borrowed"
                     >設備借用審核</a
                   >
-                  <a
-                    class="dropdown-item"
-                    href="/return_device_outer"
+                  <a class="dropdown-item" href="/return_device_outer"
                     >設備歸還</a
                   >
-                  <a
-                    class="dropdown-item"
-                    href="/update_class_resource"
+                  <a class="dropdown-item" href="/update_class_resource"
                     >上傳社課資源</a
                   >
-                  <a class="dropdown-item" href="#">出席率報表</a>
+                  <a class="dropdown-item" href="/attendance">出席率報表</a>
                   <a class="dropdown-item" href="#">設備現況更新</a>
-                  <a class="dropdown-item" href="/class_vedio"
-                    >社課錄影</a
-                  >
+                  <a class="dropdown-item" href="/class_vedio">社課錄影</a>
                   <!-- 以上為幹部功能 -->
                 </div>
               </li>
@@ -144,19 +136,13 @@
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item">
-                <a class="nav-link" href="/class_information"
-                  >社課資訊</a
-                >
+                <a class="nav-link" href="/class_information">社課資訊</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/announcement"
-                  >社團公告</a
-                >
+                <a class="nav-link" href="/announcement">社團公告</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/active_information"
-                  >活動資訊</a
-                >
+                <a class="nav-link" href="/active_information">活動資訊</a>
               </li>
               <li class="nav-item dropdown member_dropdown">
                 <a
@@ -170,19 +156,9 @@
                   社員專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="/dayOff"
-                    >請假</a
-                  >
-                  <a
-                    class="dropdown-item"
-                    href="/class_resource"
-                    >社課資源</a
-                  >
-                  <a
-                    class="dropdown-item"
-                    href="/device_borrowed"
-                    >設備借用</a
-                  >
+                  <a class="dropdown-item" href="/dayOff">請假</a>
+                  <a class="dropdown-item" href="/class_resource">社課資源</a>
+                  <a class="dropdown-item" href="/device_borrowed">設備借用</a>
                 </div>
               </li>
               <li class="nav-item dropdown manager_dropdown">
@@ -197,29 +173,19 @@
                   幹部專屬
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="/Audit_DayOff"
-                    >請假審核</a
-                  >
-                  <a
-                    class="dropdown-item"
-                    href="/Audit_borrowed"
+                  <a class="dropdown-item" href="/Audit_DayOff">請假審核</a>
+                  <a class="dropdown-item" href="/Audit_borrowed"
                     >設備借用審核</a
                   >
-                  <a
-                    class="dropdown-item"
-                    href="/return_device_outer"
+                  <a class="dropdown-item" href="/return_device_outer"
                     >設備歸還</a
                   >
-                  <a
-                    class="dropdown-item"
-                    href="/update_class_resource"
+                  <a class="dropdown-item" href="/update_class_resource"
                     >上傳社課資源</a
                   >
-                  <a class="dropdown-item" href="#">出席率報表</a>
+                  <a class="dropdown-item" href="/attendance">出席率報表</a>
                   <a class="dropdown-item" href="#">設備現況更新</a>
-                  <a class="dropdown-item" href="/class_vedio"
-                    >社課錄影</a
-                  >
+                  <a class="dropdown-item" href="/class_vedio">社課錄影</a>
                   <!-- 以上為幹部功能 -->
                 </div>
               </li>
@@ -236,31 +202,14 @@
     <div class="container">
       <div class="content">
         <div class="row">
-          <div class="col-2"></div>
-          <div class="col-5 deep">
-            <div class="square" style="justify-content: end;">
-              <p>
-                基礎課程 週一 晚上 6:30 RTC教室
-              </p>
-            </div>
-          </div>
-          <div class="col-4 deep">
-            <p>
-              進階課程 週四 晚上 6:30 RTC教室
-            </p>
-          </div>
           <div class="col-1"></div>
-        </div>
-        <div class="between-class-RTC"></div>
-        <div class="row">
-          <div class="col-2"></div>
-          <div class="col-3 mx-auto deep context-border outer-center">
-            <h5>
+          <div class="col-4 mx-auto deep context-border outer-center">
+            <h5 style="font-size: 26px;">
               逢甲RTC蘋果教育訓練中心
             </h5>
             <div class="inner-center">
-              <p>
-                全國唯一獲Apple認證　逢甲大學Apple區域教育培訓中心
+              <p style="font-size: 22px;">
+                全國唯一獲Apple認證 <br />逢甲大學Apple區域教育培訓中心
               </p>
             </div>
           </div>
@@ -337,6 +286,41 @@
               </div>
             </div>
           </div>
+        </div>
+        <div class="between-class-RTC"></div>
+        <div class="row">
+          <div class="col-2"></div>
+          <div class="col-5 deep">
+            <div class="square" style="justify-content: end;">
+              <div class="view">
+                <img
+                  src="../static/img/index/index2/08.JPG"
+                  class="img-fluid"
+                  alt="sample image"
+                  style="width: 100%;"
+                />
+                <div class="mask flex-center rgba-green-strong"></div>
+              </div>
+              <p class="white-text" style="font-size: 22px;">
+                基礎課程 週一 晚上 6:30 RTC教室
+              </p>
+            </div>
+          </div>
+          <div class="col-5 deep">
+            <div class="view">
+              <p class="white-text" style="font-size: 22px;">
+                進階課程 週四 晚上 6:30 RTC教室
+              </p>
+              <img
+                src="../static/img/index/index3/01.jpg"
+                class="img-fluid"
+                alt="sample image"
+                style="width: 100%;"
+              />
+              <div class="mask flex-center rgba-green-strong"></div>
+            </div>
+          </div>
+          <div class="col-1"></div>
         </div>
       </div>
     </div>

@@ -13,9 +13,13 @@
   height: 300px;
 }
 .between-class-RTC {
-  height: 60px;
+  height: 100px;
 }
 
 .deep {
   z-index: -100;
+}
+
+.square {
+  width: fit-content;
 }
